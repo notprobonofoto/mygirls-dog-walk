@@ -59,18 +59,23 @@ export function HomeScreen() {
       </div>
 
       {/* Header with Logo */}
-      <header className="relative z-10 pt-12 pb-6 px-6 text-center">
-        <motion.img
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          src={logo}
-          alt="MyGirls"
-          className="h-16 mx-auto mb-2"
-        />
+      <header className="relative z-10 pt-10 pb-8 px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="flex justify-center mb-4"
+        >
+          <img
+            src={logo}
+            alt="MyGirls"
+            className="w-[40%] max-w-[180px] min-w-[140px] h-auto drop-shadow-[0_4px_20px_rgba(255,183,3,0.25)]"
+          />
+        </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
           className="text-muted-foreground text-sm"
         >
           Śledź spacery swoich piesków 🐕
