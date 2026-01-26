@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useAppData } from '@/hooks/useAppData';
 
 export function StatsScreen() {
-  const { dogs, people, getDogStats, getPersonStats, walks } = useAppData();
+  const { dogs, people, getDogStats, getPersonStats, walks, getDogAge } = useAppData();
 
   const totalWalks = walks.length;
   const totalPee = walks.filter((w) => w.actions.includes('pee')).length;
@@ -74,7 +74,7 @@ export function StatsScreen() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold">{dog.name}</p>
-                    <p className="text-xs text-muted-foreground">{dog.age}</p>
+                    <p className="text-xs text-muted-foreground">{getDogAge(dog.id)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-foreground">{stats.totalWalks}</p>

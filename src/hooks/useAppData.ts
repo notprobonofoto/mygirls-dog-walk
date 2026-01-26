@@ -1,11 +1,12 @@
 import { useLocalStorage } from './useLocalStorage';
 import { Dog, Person, Walk } from '@/types';
+import { calculateAge } from '@/lib/dateUtils';
 import coffeeAvatar from '@/assets/coffee-avatar.png';
 import mokkaAvatar from '@/assets/mokka-avatar.png';
 
 const DEFAULT_DOGS: Dog[] = [
-  { id: 'coffee', name: 'Coffee', age: '3 lata', color: '#4A4A4A', avatarUrl: coffeeAvatar },
-  { id: 'mokka', name: 'Mokka', age: '6 miesięcy', color: '#D4A574', avatarUrl: mokkaAvatar },
+  { id: 'coffee', name: 'Coffee', dateOfBirth: '2022-11-03', color: '#4A4A4A', avatarUrl: coffeeAvatar },
+  { id: 'mokka', name: 'Mokka', dateOfBirth: '2025-08-15', color: '#D4A574', avatarUrl: mokkaAvatar },
 ];
 
 const DEFAULT_PEOPLE: Person[] = [
@@ -58,6 +59,11 @@ export function useAppData() {
     };
   };
 
+  const getDogAge = (dogId: string) => {
+    const dog = getDogById(dogId);
+    return dog ? calculateAge(dog.dateOfBirth) : '';
+  };
+
   return {
     dogs,
     people,
@@ -68,5 +74,7 @@ export function useAppData() {
     getPersonById,
     getDogStats,
     getPersonStats,
+    getDogAge,
+    calculateAge,
   };
 }
