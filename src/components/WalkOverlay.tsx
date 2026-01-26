@@ -9,9 +9,10 @@ interface WalkOverlayProps {
   onSave: (data: { dogId: string; personId: string; actions: ActionType[] }) => void;
   dogs: Dog[];
   people: Person[];
+  getDogAge: (dogId: string) => string;
 }
 
-export function WalkOverlay({ isOpen, onClose, onSave, dogs, people }: WalkOverlayProps) {
+export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }: WalkOverlayProps) {
   const [selectedActions, setSelectedActions] = useState<ActionType[]>([]);
   const [selectedDog, setSelectedDog] = useState<string>(dogs[0]?.id || '');
   const [selectedPerson, setSelectedPerson] = useState<string>(people[0]?.id || '');
@@ -210,7 +211,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people }: WalkOverl
                       </motion.div>
                       <div className="text-center">
                         <p className="font-semibold text-sm">{dog.name}</p>
-                        <p className="text-xs text-muted-foreground">{dog.age}</p>
+                        <p className="text-xs text-muted-foreground">{getDogAge(dog.id)}</p>
                       </div>
                     </motion.button>
                   ))}

@@ -4,7 +4,7 @@ import { useAppData } from '@/hooks/useAppData';
 import { Camera, Upload } from 'lucide-react';
 
 export function DogsScreen() {
-  const { dogs, updateDog } = useAppData();
+  const { dogs, updateDog, getDogAge } = useAppData();
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   const handleImageUpload = (dogId: string, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +81,7 @@ export function DogsScreen() {
               {/* Info */}
               <div className="flex-1 pt-2">
                 <h3 className="text-xl font-heading font-semibold">{dog.name}</h3>
-                <p className="text-muted-foreground mt-1">{dog.age}</p>
+                <p className="text-muted-foreground mt-1">{getDogAge(dog.id)}</p>
                 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="px-3 py-1 bg-secondary/30 text-secondary-foreground rounded-full text-xs font-medium">

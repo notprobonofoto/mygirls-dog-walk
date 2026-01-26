@@ -1,7 +1,7 @@
 export interface Dog {
   id: string;
   name: string;
-  age: string;
+  dateOfBirth: string;
   avatarUrl?: string;
   color: string;
 }

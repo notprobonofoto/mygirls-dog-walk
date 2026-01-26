@@ -7,7 +7,7 @@ import logo from '@/assets/logo.png';
 
 export function HomeScreen() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const { dogs, people, addWalk, walks } = useAppData();
+  const { dogs, people, addWalk, walks, getDogAge } = useAppData();
 
   const handleSaveWalk = (data: { dogId: string; personId: string; actions: ActionType[] }) => {
     addWalk(data);
@@ -161,7 +161,7 @@ export function HomeScreen() {
                 )}
               </div>
               <p className="font-semibold text-sm">{dog.name}</p>
-              <p className="text-xs text-muted-foreground">{dog.age}</p>
+              <p className="text-xs text-muted-foreground">{getDogAge(dog.id)}</p>
             </motion.div>
           ))}
         </div>
@@ -174,6 +174,7 @@ export function HomeScreen() {
         onSave={handleSaveWalk}
         dogs={dogs}
         people={people}
+        getDogAge={getDogAge}
       />
     </div>
   );
