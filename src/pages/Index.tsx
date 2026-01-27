@@ -4,10 +4,18 @@ import { HistoryScreen } from '@/components/HistoryScreen';
 import { StatsScreen } from '@/components/StatsScreen';
 import { DogsScreen } from '@/components/DogsScreen';
 import { BottomNav } from '@/components/BottomNav';
+import { PersonSelector } from '@/components/PersonSelector';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const { isSelected } = useCurrentUser();
+
+  // Show person selector if no person is selected
+  if (!isSelected) {
+    return <PersonSelector />;
+  }
 
   const renderScreen = () => {
     switch (activeTab) {

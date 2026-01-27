@@ -1,49 +1,88 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
-import { Dog, Person, ActionType } from '@/types';
-import { X, Droplets, Circle, Check } from 'lucide-react';
+import { Dog, Person, EventType } from '@/types';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface WalkOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { dogId: string; personId: string; actions: ActionType[] }) => void;
+  onSave: (data: { dogId: string; personId: string; eventType: EventType }) => void;
   dogs: Dog[];
   people: Person[];
   getDogAge: (dogId: string) => string;
 }
 
+type EventCategory = 'walk' | 'home';
+
 export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }: WalkOverlayProps) {
-  const [selectedActions, setSelectedActions] = useState<ActionType[]>([]);
-  const [selectedDog, setSelectedDog] = useState<string>(dogs[0]?.id || '');
-  const [selectedPerson, setSelectedPerson] = useState<string>(people[0]?.id || '');
+  const { currentPersonId } = useCurrentUser();
+  const [selectedDog, setSelectedDog] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const toggleAction = (action: ActionType) => {
-    setSelectedActions((prev) =>
-      prev.includes(action) ? prev.filter((a) => a !== action) : [...prev, action]
-    );
-  };
+  const handleSave = async () => {
+    if (!selectedDog || !selectedEvent || !currentPersonId) return;
 
-  const handleSave = () => {
-    if (selectedActions.length === 0 || !selectedDog || !selectedPerson) return;
-    
-    setShowSuccess(true);
-    
-    setTimeout(() => {
-      onSave({
+    try {
+      await onSave({
         dogId: selectedDog,
-        personId: selectedPerson,
-        actions: selectedActions,
+        personId: currentPersonId,
+        eventType: selectedEvent,
       });
+
+      setShowSuccess(true);
       
-      // Reset state
-      setSelectedActions([]);
-      setShowSuccess(false);
-      onClose();
-    }, 600);
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        setSelectedDog(null);
+        setSelectedEvent(null);
+        onClose();
+      }, 800);
+    } catch (error) {
+      console.error('Error saving:', error);
+    }
   };
 
-  const selectedDogData = dogs.find((d) => d.id === selectedDog);
+  const handleClose = () => {
+    setSelectedDog(null);
+    setSelectedEvent(null);
+    onClose();
+  };
+
+  const getEventCategory = (eventType: EventType): EventCategory => {
+    return eventType.endsWith('_home') ? 'home' : 'walk';
+  };
+
+  const handleEventSelect = (event: EventType) => {
+    // If selecting an event from a different category, clear previous selection
+    if (selectedEvent) {
+      const currentCategory = getEventCategory(selectedEvent);
+      const newCategory = getEventCategory(event);
+      if (currentCategory !== newCategory) {
+        setSelectedEvent(event);
+        return;
+      }
+    }
+    setSelectedEvent(event);
+  };
+
+  const walkEvents: { type: EventType; icon: string; label: string }[] = [
+    { type: 'pee_walk', icon: '💧', label: 'Siku' },
+    { type: 'poop_walk', icon: '💩', label: 'Kupa' },
+    { type: 'both_walk', icon: '💧💩', label: 'Oba' },
+  ];
+
+  const homeEvents: { type: EventType; icon: string; label: string }[] = [
+    { type: 'pee_home', icon: '🚨💧', label: 'Siku w domu' },
+    { type: 'poop_home', icon: '🚨💩', label: 'Kupa w domu' },
+  ];
+
+  const currentPerson = people.find(p => p.id === currentPersonId);
 
   return (
     <AnimatePresence>
@@ -54,8 +93,8 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40"
-            onClick={onClose}
+            onClick={handleClose}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           />
 
           {/* Bottom Sheet */}
@@ -64,193 +103,141 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-card rounded-t-[2rem] z-50 max-h-[85vh] overflow-y-auto shadow-soft"
+            className="fixed bottom-0 left-0 right-0 bg-card rounded-t-[2rem] z-50 max-h-[90vh] overflow-y-auto"
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 bg-muted rounded-full" />
-            </div>
-
-            {/* Success Animation */}
-            <AnimatePresence>
-              {showSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  className="absolute inset-0 flex items-center justify-center bg-card/95 rounded-t-[2rem] z-10"
+            {showSuccess ? (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="p-12 flex flex-col items-center justify-center"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.5 }}
+                  className="text-8xl mb-4"
                 >
-                  <motion.div
-                    initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', damping: 10 }}
-                    className="text-8xl"
-                  >
-                    🐾
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  🐾
+                </motion.span>
+                <p className="text-xl font-semibold text-primary">Zapisano!</p>
+              </motion.div>
+            ) : (
+              <div className="p-6 pb-10">
+                {/* Handle */}
+                <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
 
-            <div className="p-6 space-y-6">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-heading font-semibold text-foreground">
-                  Zapisz spacer
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Actions Selection */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Co się wydarzyło?</p>
-                <div className="flex gap-3">
-                  {/* Pee Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleAction('pee')}
-                    className={`flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 transition-all duration-200 border-2 ${
-                      selectedActions.includes('pee')
-                        ? 'bg-secondary/30 border-secondary shadow-md'
-                        : 'bg-muted border-transparent hover:border-secondary/30'
-                    }`}
-                  >
-                    <motion.span
-                      animate={{ scale: selectedActions.includes('pee') ? 1.2 : 1 }}
-                      className="text-3xl"
-                    >
-                      💧
-                    </motion.span>
-                    <span className="text-sm font-medium">Siku</span>
-                    {selectedActions.includes('pee') && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-1 w-5 h-5 bg-secondary rounded-full flex items-center justify-center"
-                      >
-                        <Check size={12} className="text-secondary-foreground" />
-                      </motion.div>
-                    )}
-                  </motion.button>
-
-                  {/* Poop Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleAction('poop')}
-                    className={`flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 transition-all duration-200 border-2 ${
-                      selectedActions.includes('poop')
-                        ? 'bg-accent/20 border-accent shadow-md'
-                        : 'bg-muted border-transparent hover:border-accent/30'
-                    }`}
-                  >
-                    <motion.span
-                      animate={{ scale: selectedActions.includes('poop') ? 1.2 : 1 }}
-                      className="text-3xl"
-                    >
-                      💩
-                    </motion.span>
-                    <span className="text-sm font-medium">Kupa</span>
-                  </motion.button>
-
-                  {/* Both Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      const hasBoth = selectedActions.includes('pee') && selectedActions.includes('poop');
-                      setSelectedActions(hasBoth ? [] : ['pee', 'poop']);
-                    }}
-                    className={`flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 transition-all duration-200 border-2 ${
-                      selectedActions.includes('pee') && selectedActions.includes('poop')
-                        ? 'bg-primary/20 border-primary shadow-md'
-                        : 'bg-muted border-transparent hover:border-primary/30'
-                    }`}
-                  >
-                    <motion.span
-                      animate={{ 
-                        scale: selectedActions.includes('pee') && selectedActions.includes('poop') ? 1.2 : 1 
-                      }}
-                      className="text-3xl"
-                    >
-                      💧💩
-                    </motion.span>
-                    <span className="text-sm font-medium">Oba</span>
-                  </motion.button>
+                {/* Current user indicator */}
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-primary">{currentPerson?.initial}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {currentPerson?.name} dodaje wpis
+                  </span>
                 </div>
-              </div>
 
-              {/* Dog Selection */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Który piesek?</p>
-                <div className="flex gap-3">
+                {/* Dogs selection */}
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                  Który piesek?
+                </h3>
+                <div className="flex gap-3 mb-6">
                   {dogs.map((dog) => (
                     <motion.button
                       key={dog.id}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedDog(dog.id)}
-                      className={`flex-1 py-4 px-3 rounded-2xl flex flex-col items-center gap-2 transition-all duration-200 border-2 ${
+                      className={`flex-1 card-pet p-4 flex flex-col items-center transition-all ${
                         selectedDog === dog.id
-                          ? 'bg-primary/20 border-primary shadow-md'
-                          : 'bg-muted border-transparent hover:border-primary/30'
+                          ? 'ring-2 ring-primary ring-offset-2 ring-offset-card'
+                          : ''
                       }`}
                     >
                       <motion.div
-                        animate={{ scale: selectedDog === dog.id ? 1.1 : 1 }}
-                        className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center"
+                        animate={selectedDog === dog.id ? { scale: 1.05 } : { scale: 1 }}
+                        className="w-16 h-16 rounded-full overflow-hidden mb-2"
                         style={{ backgroundColor: dog.avatarUrl ? 'transparent' : dog.color }}
                       >
                         {dog.avatarUrl ? (
                           <img src={dog.avatarUrl} alt={dog.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-2xl">🐕</span>
+                          <div className="w-full h-full flex items-center justify-center text-2xl">🐕</div>
                         )}
                       </motion.div>
-                      <div className="text-center">
-                        <p className="font-semibold text-sm">{dog.name}</p>
-                        <p className="text-xs text-muted-foreground">{getDogAge(dog.id)}</p>
-                      </div>
+                      <p className="font-semibold text-sm">{dog.name}</p>
+                      <p className="text-xs text-muted-foreground">{getDogAge(dog.id)}</p>
                     </motion.button>
                   ))}
                 </div>
-              </div>
 
-              {/* Person Selection */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Kto wyszedł?</p>
-                <div className="flex gap-2 flex-wrap">
-                  {people.map((person) => (
+                {/* Walk events */}
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                  Na spacerze
+                </h3>
+                <div className="flex gap-2 mb-6">
+                  {walkEvents.map((event) => (
                     <motion.button
-                      key={person.id}
+                      key={event.type}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setSelectedPerson(person.id)}
-                      className={`chip ${
-                        selectedPerson === person.id ? 'chip-selected' : 'chip-unselected'
+                      onClick={() => handleEventSelect(event.type)}
+                      className={`flex-1 p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+                        selectedEvent === event.type
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-card hover:border-primary/30'
                       }`}
                     >
-                      {person.name}
+                      <motion.span
+                        animate={selectedEvent === event.type ? { scale: 1.1 } : { scale: 1 }}
+                        className="text-3xl"
+                      >
+                        {event.icon}
+                      </motion.span>
+                      <span className="text-xs font-medium">{event.label}</span>
                     </motion.button>
                   ))}
                 </div>
-              </div>
 
-              {/* Auto-save Button */}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSave}
-                disabled={selectedActions.length === 0}
-                className={`w-full py-4 rounded-[2rem] font-heading font-semibold text-lg transition-all duration-200 ${
-                  selectedActions.length > 0
-                    ? 'btn-main'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
-              >
-                {selectedActions.length > 0 ? '🐾 Zapisz spacer' : 'Wybierz co się wydarzyło'}
-              </motion.button>
-            </div>
+                {/* Home events */}
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-destructive">🚨</span> W domu (alert)
+                </h3>
+                <div className="flex gap-2 mb-8">
+                  {homeEvents.map((event) => (
+                    <motion.button
+                      key={event.type}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleEventSelect(event.type)}
+                      className={`flex-1 p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+                        selectedEvent === event.type
+                          ? 'border-destructive bg-destructive/10'
+                          : 'border-destructive/30 bg-destructive/5 hover:border-destructive/50'
+                      }`}
+                    >
+                      <motion.span
+                        animate={selectedEvent === event.type ? { scale: 1.1 } : { scale: 1 }}
+                        className="text-3xl"
+                      >
+                        {event.icon}
+                      </motion.span>
+                      <span className="text-xs font-medium text-destructive">{event.label}</span>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* Save button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSave}
+                  disabled={!selectedDog || !selectedEvent}
+                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+                    selectedDog && selectedEvent
+                      ? 'btn-main'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
+                >
+                  Zapisz
+                </motion.button>
+              </div>
+            )}
           </motion.div>
         </>
       )}

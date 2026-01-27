@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          person_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          person_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          person_id?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      dogs: {
+        Row: {
+          avatar_url: string | null
+          color: string
+          date_of_birth: string
+          id: string
+          name: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          color: string
+          date_of_birth: string
+          id: string
+          name: string
+        }
+        Update: {
+          avatar_url?: string | null
+          color?: string
+          date_of_birth?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      people: {
+        Row: {
+          id: string
+          initial: string
+          name: string
+        }
+        Insert: {
+          id: string
+          initial: string
+          name: string
+        }
+        Update: {
+          id?: string
+          initial?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      walks: {
+        Row: {
+          created_at: string
+          dog_id: string
+          event_type: string
+          id: string
+          person_id: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          event_type: string
+          id?: string
+          person_id: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          event_type?: string
+          id?: string
+          person_id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

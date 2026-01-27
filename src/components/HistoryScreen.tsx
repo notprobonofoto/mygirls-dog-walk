@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { useAppData } from '@/hooks/useAppData';
+import { useSharedData } from '@/hooks/useSharedData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { EventType } from '@/types';
 
 export function HistoryScreen() {
-  const { walks, getDogById, getPersonById } = useAppData();
+  const { walks, getDogById, getPersonById, isHomeEvent } = useSharedData();
 
   const groupedWalks = walks.reduce((acc, walk) => {
     const date = format(new Date(walk.timestamp), 'yyyy-MM-dd');
@@ -16,6 +17,23 @@ export function HistoryScreen() {
   const sortedDates = Object.keys(groupedWalks).sort((a, b) => 
     new Date(b).getTime() - new Date(a).getTime()
   );
+
+  const getEventIcons = (eventType: EventType) => {
+    switch (eventType) {
+      case 'pee_walk':
+        return '💧';
+      case 'poop_walk':
+        return '💩';
+      case 'both_walk':
+        return '💧💩';
+      case 'pee_home':
+        return '🚨💧';
+      case 'poop_home':
+        return '🚨💩';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -54,6 +72,7 @@ export function HistoryScreen() {
                 {groupedWalks[date].map((walk, walkIndex) => {
                   const dog = getDogById(walk.dogId);
                   const person = getPersonById(walk.personId);
+                  const isHome = isHomeEvent(walk.eventType);
                   
                   return (
                     <motion.div
@@ -61,7 +80,9 @@ export function HistoryScreen() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: dateIndex * 0.05 + walkIndex * 0.03 }}
-                      className="card-pet p-4 flex items-center gap-4"
+                      className={`card-pet p-4 flex items-center gap-4 ${
+                        isHome ? 'bg-destructive/5 border-destructive/20' : ''
+                      }`}
                     >
                       {/* Time */}
                       <div className="text-center min-w-[50px]">
@@ -85,17 +106,23 @@ export function HistoryScreen() {
                       {/* Dog Name */}
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{dog?.name || 'Nieznany'}</p>
+                        {isHome && (
+                          <p className="text-xs text-destructive font-medium">W domu</p>
+                        )}
                       </div>
 
                       {/* Actions */}
                       <div className="flex items-center gap-1">
-                        {walk.actions.includes('pee') && <span className="text-xl">💧</span>}
-                        {walk.actions.includes('poop') && <span className="text-xl">💩</span>}
+                        <span className="text-xl">{getEventIcons(walk.eventType)}</span>
                       </div>
 
                       {/* Person Initial */}
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        isHome ? 'bg-destructive/20' : 'bg-primary/20'
+                      }`}>
+                        <span className={`text-sm font-semibold ${
+                          isHome ? 'text-destructive' : 'text-primary'
+                        }`}>
                           {person?.initial || '?'}
                         </span>
                       </div>

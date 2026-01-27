@@ -1,20 +1,20 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
-import { useAppData } from '@/hooks/useAppData';
+import { useSharedData } from '@/hooks/useSharedData';
 import { Camera, Upload } from 'lucide-react';
 
 export function DogsScreen() {
-  const { dogs, updateDog, getDogAge } = useAppData();
+  const { dogs, updateDog, getDogAge } = useSharedData();
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
-  const handleImageUpload = (dogId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (dogId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const dataUrl = e.target?.result as string;
-      updateDog(dogId, { avatarUrl: dataUrl });
+      await updateDog(dogId, { avatarUrl: dataUrl });
     };
     reader.readAsDataURL(file);
   };

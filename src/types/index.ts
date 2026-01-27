@@ -12,12 +12,15 @@ export interface Person {
   initial: string;
 }
 
+export type EventType = 'pee_walk' | 'poop_walk' | 'both_walk' | 'pee_home' | 'poop_home';
+
 export interface Walk {
   id: string;
   timestamp: string;
   dogId: string;
   personId: string;
-  actions: ('pee' | 'poop')[];
+  eventType: EventType;
 }
 
+// Legacy compatibility
 export type ActionType = 'pee' | 'poop';
