@@ -1,16 +1,20 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { WalkOverlay } from './WalkOverlay';
-import { useAppData } from '@/hooks/useAppData';
-import { ActionType } from '@/types';
+import { useSharedData } from '@/hooks/useSharedData';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { EventType } from '@/types';
 import logo from '@/assets/logo.png';
 
 export function HomeScreen() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const { dogs, people, addWalk, walks, getDogAge } = useAppData();
+  const { dogs, people, addWalk, walks, getDogAge, isHomeEvent } = useSharedData();
+  const { currentPersonId, clearPerson } = useCurrentUser();
 
-  const handleSaveWalk = (data: { dogId: string; personId: string; actions: ActionType[] }) => {
-    addWalk(data);
+  const currentPerson = people.find(p => p.id === currentPersonId);
+
+  const handleSaveWalk = async (data: { dogId: string; personId: string; eventType: EventType }) => {
+    await addWalk(data);
   };
 
   const todayWalks = walks.filter((w) => {
@@ -19,11 +23,13 @@ export function HomeScreen() {
     return walkDate === today;
   });
 
+  const todayWalkEvents = todayWalks.filter(w => !isHomeEvent(w.eventType));
+  const todayHomeEvents = todayWalks.filter(w => isHomeEvent(w.eventType));
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated Background Decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating paw prints */}
         <motion.div
           animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
@@ -53,7 +59,6 @@ export function HomeScreen() {
           🐾
         </motion.div>
         
-        {/* Soft gradient blobs */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
       </div>
@@ -80,6 +85,21 @@ export function HomeScreen() {
         >
           Śledź spacery swoich piesków 🐕
         </motion.p>
+
+        {/* Current user badge */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          onClick={clearPerson}
+          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-card rounded-full border border-border text-sm"
+        >
+          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+            <span className="text-xs font-bold text-primary">{currentPerson?.initial}</span>
+          </div>
+          <span className="text-muted-foreground">{currentPerson?.name}</span>
+          <span className="text-xs text-muted-foreground/60">• zmień</span>
+        </motion.button>
       </header>
 
       {/* Today's Stats */}
@@ -89,27 +109,41 @@ export function HomeScreen() {
         transition={{ delay: 0.3 }}
         className="relative z-10 px-6 mb-8"
       >
-        <div className="card-pet p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Dzisiaj</p>
-            <p className="text-2xl font-heading font-bold text-foreground">
-              {todayWalks.length} {todayWalks.length === 1 ? 'spacer' : todayWalks.length < 5 ? 'spacery' : 'spacerów'}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <div className="flex items-center gap-1">
-              <span className="text-xl">💧</span>
-              <span className="font-medium">
-                {todayWalks.filter((w) => w.actions.includes('pee')).length}
-              </span>
+        <div className="card-pet p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-muted-foreground">Dzisiaj</p>
+              <p className="text-2xl font-heading font-bold text-foreground">
+                {todayWalkEvents.length} {todayWalkEvents.length === 1 ? 'spacer' : todayWalkEvents.length < 5 ? 'spacery' : 'spacerów'}
+              </p>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-xl">💩</span>
-              <span className="font-medium">
-                {todayWalks.filter((w) => w.actions.includes('poop')).length}
-              </span>
+            <div className="flex gap-3">
+              <div className="flex items-center gap-1">
+                <span className="text-xl">💧</span>
+                <span className="font-medium">
+                  {todayWalks.filter((w) => w.eventType.includes('pee') || w.eventType === 'both_walk').length}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xl">💩</span>
+                <span className="font-medium">
+                  {todayWalks.filter((w) => w.eventType.includes('poop') || w.eventType === 'both_walk').length}
+                </span>
+              </div>
             </div>
           </div>
+          
+          {/* Home events warning */}
+          {todayHomeEvents.length > 0 && (
+            <div className="pt-3 border-t border-destructive/20">
+              <div className="flex items-center gap-2 text-destructive text-sm">
+                <span>🚨</span>
+                <span className="font-medium">
+                  {todayHomeEvents.length} {todayHomeEvents.length === 1 ? 'zdarzenie' : 'zdarzenia'} w domu
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -124,7 +158,6 @@ export function HomeScreen() {
           onClick={() => setIsOverlayOpen(true)}
           className="relative w-full max-w-sm aspect-square rounded-[3rem] btn-main flex flex-col items-center justify-center gap-4 animate-breathe"
         >
-          {/* Pulse ring animation */}
           <div className="absolute inset-0 rounded-[3rem] animate-pulse-ring" />
           
           <motion.span

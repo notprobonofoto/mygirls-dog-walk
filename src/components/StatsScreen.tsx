@@ -1,12 +1,15 @@
 import { motion } from 'framer-motion';
-import { useAppData } from '@/hooks/useAppData';
+import { useSharedData } from '@/hooks/useSharedData';
 
 export function StatsScreen() {
-  const { dogs, people, getDogStats, getPersonStats, walks, getDogAge } = useAppData();
+  const { dogs, people, getDogStats, getPersonStats, walks, getDogAge, isHomeEvent, isWalkEvent } = useSharedData();
 
-  const totalWalks = walks.length;
-  const totalPee = walks.filter((w) => w.actions.includes('pee')).length;
-  const totalPoop = walks.filter((w) => w.actions.includes('poop')).length;
+  const walkEvents = walks.filter(w => isWalkEvent(w.eventType));
+  const homeEvents = walks.filter(w => isHomeEvent(w.eventType));
+  
+  const totalWalks = walkEvents.length;
+  const totalPee = walks.filter((w) => w.eventType.includes('pee') || w.eventType === 'both_walk').length;
+  const totalPoop = walks.filter((w) => w.eventType.includes('poop') || w.eventType === 'both_walk').length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -40,6 +43,34 @@ export function StatsScreen() {
             </div>
           </div>
         </motion.div>
+
+        {/* Home Events Warning */}
+        {homeEvents.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="card-pet p-5 bg-destructive/5 border-destructive/20"
+          >
+            <h2 className="text-lg font-heading font-semibold mb-4 flex items-center gap-2">
+              <span>🚨</span> Zdarzenia w domu
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-destructive">
+                  {homeEvents.filter(w => w.eventType === 'pee_home').length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">💧 Siku w domu</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-destructive">
+                  {homeEvents.filter(w => w.eventType === 'poop_home').length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">💩 Kupa w domu</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Dog Stats */}
         <motion.div
@@ -102,6 +133,12 @@ export function StatsScreen() {
                     <span>💩</span>
                     <span className="text-muted-foreground">{stats.totalPoop}</span>
                   </div>
+                  {stats.homeEvents > 0 && (
+                    <div className="flex items-center gap-1 text-destructive">
+                      <span>🚨</span>
+                      <span>{stats.homeEvents} w domu</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );
