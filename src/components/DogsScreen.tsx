@@ -2,9 +2,10 @@ import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useSharedData } from '@/hooks/useSharedData';
 import { Camera, Upload } from 'lucide-react';
+import { getWeekWalksCount } from '@/lib/weekUtils';
 
 export function DogsScreen() {
-  const { dogs, updateDog, getDogAge } = useSharedData();
+  const { dogs, updateDog, getDogAge, walks } = useSharedData();
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   const handleImageUpload = async (dogId: string, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,12 +99,11 @@ export function DogsScreen() {
             <div className="mt-6 pt-4 border-t border-border">
               <div className="flex justify-around text-center">
                 <div>
-                  <p className="text-sm text-muted-foreground">Ostatni spacer</p>
-                  <p className="font-semibold mt-1">Dzisiaj</p>
-                </div>
-                <div>
                   <p className="text-sm text-muted-foreground">Ten tydzień</p>
-                  <p className="font-semibold mt-1">12 spacerów</p>
+                  <p className="font-semibold mt-1 text-primary">
+                    {getWeekWalksCount(walks, dog.id)} {getWeekWalksCount(walks, dog.id) === 1 ? 'spacer' : 
+                      getWeekWalksCount(walks, dog.id) < 5 ? 'spacery' : 'spacerów'}
+                  </p>
                 </div>
               </div>
             </div>
