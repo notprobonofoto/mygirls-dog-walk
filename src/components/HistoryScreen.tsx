@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { isGuestPerson } from '@/lib/weekUtils';
 import { useSharedData } from '@/hooks/useSharedData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -117,15 +118,21 @@ export function HistoryScreen() {
                       </div>
 
                       {/* Person Initial */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        isHome ? 'bg-destructive/20' : 'bg-primary/20'
-                      }`}>
-                        <span className={`text-sm font-semibold ${
-                          isHome ? 'text-destructive' : 'text-primary'
+                      {isGuestPerson(walk.personId) ? (
+                        <div className="px-2 py-1 rounded-full bg-muted">
+                          <span className="text-xs text-muted-foreground font-medium">Gość</span>
+                        </div>
+                      ) : (
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isHome ? 'bg-destructive/20' : 'bg-primary/20'
                         }`}>
-                          {person?.initial || '?'}
-                        </span>
-                      </div>
+                          <span className={`text-sm font-semibold ${
+                            isHome ? 'text-destructive' : 'text-primary'
+                          }`}>
+                            {person?.initial || '?'}
+                          </span>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}

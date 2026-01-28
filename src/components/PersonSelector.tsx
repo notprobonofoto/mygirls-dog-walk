@@ -1,11 +1,15 @@
 import { motion } from 'framer-motion';
 import { useSharedData } from '@/hooks/useSharedData';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { isGuestPerson } from '@/lib/weekUtils';
 import logo from '@/assets/logo.png';
 
 export function PersonSelector() {
   const { people, loading } = useSharedData();
   const { selectPerson } = useCurrentUser();
+  
+  // Filter out guest from initial selection - guest is only for walk logging
+  const selectablePeople = people.filter(p => !isGuestPerson(p.id));
 
   if (loading) {
     return (
@@ -77,7 +81,7 @@ export function PersonSelector() {
 
       {/* Person cards */}
       <div className="flex flex-col gap-4 w-full max-w-sm">
-        {people.map((person, index) => (
+        {selectablePeople.map((person, index) => (
           <motion.button
             key={person.id}
             initial={{ opacity: 0, x: -20 }}

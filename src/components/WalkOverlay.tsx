@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dog, Person, EventType } from '@/types';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { isGuestPerson } from '@/lib/weekUtils';
 
 interface WalkOverlayProps {
   isOpen: boolean;
@@ -18,15 +19,21 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
   const { currentPersonId } = useCurrentUser();
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Separate family members from guest
+  const familyMembers = people.filter(p => !isGuestPerson(p.id));
+  const guestPerson = people.find(p => isGuestPerson(p.id));
+
   const handleSave = async () => {
-    if (!selectedDog || !selectedEvent || !currentPersonId) return;
+    const personToUse = selectedPersonId || currentPersonId;
+    if (!selectedDog || !selectedEvent || !personToUse) return;
 
     try {
       await onSave({
         dogId: selectedDog,
-        personId: currentPersonId,
+        personId: personToUse,
         eventType: selectedEvent,
       });
 
@@ -41,6 +48,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
         setShowSuccess(false);
         setSelectedDog(null);
         setSelectedEvent(null);
+        setSelectedPersonId(null);
         onClose();
       }, 800);
     } catch (error) {
@@ -51,6 +59,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
   const handleClose = () => {
     setSelectedDog(null);
     setSelectedEvent(null);
+    setSelectedPersonId(null);
     onClose();
   };
 
@@ -125,14 +134,50 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                 {/* Handle */}
                 <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
 
-                {/* Current user indicator */}
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-sm font-bold text-primary">{currentPerson?.initial}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {currentPerson?.name} dodaje wpis
-                  </span>
+                {/* Person Selection */}
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                  Kto wyprowadził?
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {/* Family members */}
+                  {familyMembers.map((person) => {
+                    const isSelected = selectedPersonId ? selectedPersonId === person.id : currentPersonId === person.id;
+                    return (
+                      <motion.button
+                        key={person.id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedPersonId(person.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border bg-card hover:border-primary/30'
+                        }`}
+                      >
+                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="text-xs font-bold text-primary">{person.initial}</span>
+                        </div>
+                        <span className="text-sm font-medium">{person.name}</span>
+                      </motion.button>
+                    );
+                  })}
+                  
+                  {/* Guest option */}
+                  {guestPerson && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedPersonId('guest')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+                        selectedPersonId === 'guest'
+                          ? 'border-muted-foreground bg-muted'
+                          : 'border-border bg-card hover:border-muted-foreground/50'
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">👤</span>
+                      </div>
+                      <span className="text-sm font-medium text-muted-foreground">Gość</span>
+                    </motion.button>
+                  )}
                 </div>
 
                 {/* Dogs selection */}
@@ -227,9 +272,9 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
-                  disabled={!selectedDog || !selectedEvent}
+                  disabled={!selectedDog || !selectedEvent || (!selectedPersonId && !currentPersonId)}
                   className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
-                    selectedDog && selectedEvent
+                    selectedDog && selectedEvent && (selectedPersonId || currentPersonId)
                       ? 'btn-main'
                       : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}

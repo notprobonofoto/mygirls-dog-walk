@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
 import { useSharedData } from '@/hooks/useSharedData';
+import { CalendarView } from './CalendarView';
+import { isGuestPerson } from '@/lib/weekUtils';
 
 export function StatsScreen() {
-  const { dogs, people, getDogStats, getPersonStats, walks, getDogAge, isHomeEvent, isWalkEvent } = useSharedData();
+  const { dogs, people, getDogStats, getPersonStats, walks, getDogAge, isHomeEvent, isWalkEvent, getDogById, getPersonById } = useSharedData();
+  
+  // Filter out guest from person stats display
+  const displayPeople = people.filter(p => !isGuestPerson(p.id));
 
   const walkEvents = walks.filter(w => isWalkEvent(w.eventType));
   const homeEvents = walks.filter(w => isHomeEvent(w.eventType));
@@ -145,6 +150,23 @@ export function StatsScreen() {
           })}
         </motion.div>
 
+        {/* Calendar View */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="space-y-3"
+        >
+          <h2 className="text-lg font-heading font-semibold px-1">📅 Kalendarz</h2>
+          <CalendarView 
+            walks={walks}
+            dogs={dogs}
+            people={people}
+            getDogById={getDogById}
+            getPersonById={getPersonById}
+          />
+        </motion.div>
+
         {/* Person Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -153,9 +175,9 @@ export function StatsScreen() {
           className="space-y-3"
         >
           <h2 className="text-lg font-heading font-semibold px-1">Opiekunowie</h2>
-          {people.map((person, index) => {
+          {displayPeople.map((person, index) => {
             const stats = getPersonStats(person.id);
-            const maxWalks = Math.max(...people.map((p) => getPersonStats(p.id).totalWalks), 1);
+            const maxWalks = Math.max(...displayPeople.map((p) => getPersonStats(p.id).totalWalks), 1);
             
             return (
               <motion.div

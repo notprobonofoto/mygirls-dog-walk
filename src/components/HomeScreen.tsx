@@ -63,24 +63,39 @@ export function HomeScreen() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Header with Logo */}
-      <header className="relative z-10 pt-10 pb-8 px-6 text-center">
+      {/* Header with Logo - Large and Prominent */}
+      <header className="relative z-10 pt-8 pb-6 px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex justify-center mb-4"
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="flex justify-center mb-3"
         >
-          <img
+          <motion.img
             src={logo}
             alt="MyGirls"
-            className="w-[40%] max-w-[180px] min-w-[140px] h-auto drop-shadow-[0_4px_20px_rgba(255,183,3,0.25)]"
+            className="w-[40%] max-w-[200px] min-w-[160px] h-auto"
+            style={{
+              filter: 'drop-shadow(0 8px 30px rgba(255, 183, 3, 0.35))',
+            }}
+            animate={{
+              filter: [
+                'drop-shadow(0 8px 30px rgba(255, 183, 3, 0.35))',
+                'drop-shadow(0 8px 40px rgba(255, 183, 3, 0.45))',
+                'drop-shadow(0 8px 30px rgba(255, 183, 3, 0.35))',
+              ],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
           />
         </motion.div>
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
           className="text-muted-foreground text-sm"
         >
           Śledź spacery swoich piesków 🐕
