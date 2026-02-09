@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Home, Clock, BarChart3, Dog } from 'lucide-react';
+import { Home, Clock, BarChart3, Dog, RotateCcw } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -9,6 +9,7 @@ interface BottomNavProps {
 const tabs = [
   { id: 'home', icon: Home, label: 'Start' },
   { id: 'history', icon: Clock, label: 'Historia' },
+  { id: 'backdate', icon: RotateCcw, label: 'Wstecz' },
   { id: 'stats', icon: BarChart3, label: 'Statystyki' },
   { id: 'dogs', icon: Dog, label: 'Pieski' },
 ];
