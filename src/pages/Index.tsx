@@ -3,6 +3,7 @@ import { HomeScreen } from '@/components/HomeScreen';
 import { HistoryScreen } from '@/components/HistoryScreen';
 import { StatsScreen } from '@/components/StatsScreen';
 import { DogsScreen } from '@/components/DogsScreen';
+import { BackdateScreen } from '@/components/BackdateScreen';
 import { BottomNav } from '@/components/BottomNav';
 import { PersonSelector } from '@/components/PersonSelector';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -25,6 +26,8 @@ const Index = () => {
         return <HistoryScreen key="history" />;
       case 'stats':
         return <StatsScreen key="stats" />;
+      case 'backdate':
+        return <BackdateScreen key="backdate" />;
       case 'dogs':
         return <DogsScreen key="dogs" />;
       default:

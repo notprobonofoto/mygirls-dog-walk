@@ -97,14 +97,18 @@ export function useSharedData() {
     };
   }, []);
 
-  const addWalk = async (data: { dogId: string; personId: string; eventType: EventType }) => {
+  const addWalk = async (data: { dogId: string; personId: string; eventType: EventType; timestamp?: string }) => {
+    const insertData: { dog_id: string; person_id: string; event_type: string; timestamp?: string } = {
+      dog_id: data.dogId,
+      person_id: data.personId,
+      event_type: data.eventType,
+    };
+    if (data.timestamp) {
+      insertData.timestamp = data.timestamp;
+    }
     const { data: newWalk, error } = await supabase
       .from('walks')
-      .insert({
-        dog_id: data.dogId,
-        person_id: data.personId,
-        event_type: data.eventType,
-      })
+      .insert(insertData)
       .select()
       .single();
 
