@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
-// Simple in-memory pub/sub for same-tab localStorage sync
 const listeners = new Map<string, Set<() => void>>();
 
 function subscribe(key: string, callback: () => void) {
@@ -13,26 +12,26 @@ function notify(key: string) {
   listeners.get(key)?.forEach(cb => cb());
 }
 
-export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
-  const getSnapshot = useCallback(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ?? null;
-    } catch {
-      return null;
-    }
-  }, [key]);
+function getStorageValue<T>(key: string, initialValue: T): T {
+  try {
+    const item = window.localStorage.getItem(key);
+    return item !== null ? JSON.parse(item) : initialValue;
+  } catch {
+    return initialValue;
+  }
+}
 
+export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
   const subscribeFn = useCallback((cb: () => void) => subscribe(key, cb), [key]);
+  const getSnapshot = useCallback(() => window.localStorage.getItem(key), [key]);
 
   const raw = useSyncExternalStore(subscribeFn, getSnapshot);
   const value: T = raw !== null ? JSON.parse(raw) : initialValue;
 
   const setValue = useCallback((v: T | ((prev: T) => T)) => {
     try {
-      const current = window.localStorage.getItem(key);
-      const currentParsed: T = current !== null ? JSON.parse(current) : initialValue;
-      const valueToStore = v instanceof Function ? v(currentParsed) : v;
+      const current = getStorageValue(key, initialValue);
+      const valueToStore = v instanceof Function ? v(current) : v;
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
       notify(key);
     } catch (error) {
