@@ -30,34 +30,33 @@ export function HomeScreen() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated Background Decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-20 left-10 text-6xl opacity-10"
-        >
-          🐾
-        </motion.div>
-        <motion.div
-          animate={{ y: [10, -15, 10], rotate: [0, -5, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          className="absolute top-40 right-8 text-5xl opacity-10"
-        >
-          🐾
-        </motion.div>
-        <motion.div
-          animate={{ y: [-5, 15, -5], x: [-5, 5, -5] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute bottom-40 left-20 text-7xl opacity-10"
-        >
-          🐾
-        </motion.div>
-        <motion.div
-          animate={{ y: [5, -10, 5] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          className="absolute top-60 left-1/2 text-4xl opacity-10"
-        >
-          🐾
-        </motion.div>
+        {[
+          { top: '5%', left: '8%', size: 'text-7xl', dur: 8, delay: 0, y: [-10, 12, -10], rot: [0, 6, 0] },
+          { top: '12%', right: '6%', size: 'text-4xl', dur: 10, delay: 1, y: [10, -15, 10], rot: [0, -5, 0] },
+          { top: '25%', left: '75%', size: 'text-3xl', dur: 7, delay: 0.3, y: [-8, 10, -8], rot: [0, 8, 0] },
+          { top: '18%', left: '40%', size: 'text-5xl', dur: 11, delay: 2, y: [5, -12, 5], rot: [0, -3, 0] },
+          { top: '35%', left: '5%', size: 'text-2xl', dur: 9, delay: 1.5, y: [-6, 14, -6], rot: [0, 10, 0] },
+          { top: '45%', right: '12%', size: 'text-8xl', dur: 13, delay: 0.8, y: [-5, 15, -5], rot: [0, -4, 0] },
+          { top: '55%', left: '20%', size: 'text-3xl', dur: 8.5, delay: 3, y: [8, -10, 8], rot: [0, 7, 0] },
+          { top: '60%', left: '60%', size: 'text-5xl', dur: 10.5, delay: 1.2, y: [-12, 8, -12], rot: [0, -6, 0] },
+          { top: '70%', left: '85%', size: 'text-2xl', dur: 7.5, delay: 2.5, y: [6, -8, 6], rot: [0, 12, 0] },
+          { top: '75%', left: '10%', size: 'text-6xl', dur: 12, delay: 0.5, y: [-7, 11, -7], rot: [0, -8, 0] },
+          { top: '80%', left: '45%', size: 'text-xl', dur: 9.5, delay: 3.5, y: [10, -6, 10], rot: [0, 5, 0] },
+          { top: '30%', left: '30%', size: 'text-xl', dur: 14, delay: 4, y: [-4, 9, -4], rot: [0, -10, 0] },
+          { top: '50%', left: '50%', size: 'text-4xl', dur: 11.5, delay: 1.8, y: [7, -13, 7], rot: [0, 4, 0] },
+          { top: '15%', left: '55%', size: 'text-2xl', dur: 8, delay: 2.8, y: [-9, 7, -9], rot: [0, -7, 0] },
+          { top: '85%', left: '70%', size: 'text-6xl', dur: 10, delay: 0.2, y: [4, -11, 4], rot: [0, 9, 0] },
+        ].map((paw, i) => (
+          <motion.div
+            key={i}
+            animate={{ y: paw.y, rotate: paw.rot }}
+            transition={{ duration: paw.dur, repeat: Infinity, ease: 'easeInOut', delay: paw.delay }}
+            className={`absolute ${paw.size} opacity-[0.07]`}
+            style={{ top: paw.top, left: paw.left, right: (paw as any).right }}
+          >
+            🐾
+          </motion.div>
+        ))}
         
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
