@@ -254,13 +254,13 @@ export function BackdateScreen() {
         <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
           Na spacerze
         </h3>
-        <div className="flex gap-2 mb-6">
+        <div className="grid grid-cols-4 gap-2 mb-6">
           {walkEvents.map((event) => (
             <motion.button
               key={event.type}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleEventSelect(event.type)}
-              className={`flex-1 p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+              className={`p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
                 selectedEvent === event.type
                   ? 'border-primary bg-primary/10'
                   : 'border-border bg-card hover:border-primary/30'
@@ -268,11 +268,11 @@ export function BackdateScreen() {
             >
               <motion.span
                 animate={selectedEvent === event.type ? { scale: 1.1 } : { scale: 1 }}
-                className="text-3xl"
+                className="text-2xl"
               >
                 {event.icon}
               </motion.span>
-              <span className="text-xs font-medium">{event.label}</span>
+              <span className="text-[10px] font-medium leading-tight">{event.label}</span>
             </motion.button>
           ))}
         </div>
@@ -281,13 +281,13 @@ export function BackdateScreen() {
         <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
           <span className="text-destructive">🚨</span> W domu (alert)
         </h3>
-        <div className="flex gap-2 mb-8">
+        <div className="grid grid-cols-2 gap-2 mb-8">
           {homeEvents.map((event) => (
             <motion.button
               key={event.type}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleEventSelect(event.type)}
-              className={`flex-1 p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+              className={`p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
                 selectedEvent === event.type
                   ? 'border-destructive bg-destructive/10'
                   : 'border-destructive/30 bg-destructive/5 hover:border-destructive/50'
@@ -295,11 +295,11 @@ export function BackdateScreen() {
             >
               <motion.span
                 animate={selectedEvent === event.type ? { scale: 1.1 } : { scale: 1 }}
-                className="text-3xl"
+                className="text-2xl"
               >
                 {event.icon}
               </motion.span>
-              <span className="text-xs font-medium text-destructive">{event.label}</span>
+              <span className="text-[10px] font-medium text-destructive leading-tight">{event.label}</span>
             </motion.button>
           ))}
         </div>

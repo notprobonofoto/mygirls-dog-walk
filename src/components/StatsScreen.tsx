@@ -1,20 +1,58 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSharedData } from '@/hooks/useSharedData';
 import { CalendarView } from './CalendarView';
 import { isGuestPerson } from '@/lib/weekUtils';
+import { 
+  getStatsWeekRange, 
+  getStatsMonthRange, 
+  getWalksInRange, 
+  getAverageWalkHour, 
+  getAverageWalkHourForDog 
+} from '@/lib/statsUtils';
+
+type StatsPeriod = 'week' | 'month';
 
 export function StatsScreen() {
   const { dogs, people, getDogStats, getPersonStats, walks, getDogAge, isHomeEvent, isWalkEvent, getDogById, getPersonById } = useSharedData();
+  const [period, setPeriod] = useState<StatsPeriod>('week');
   
-  // Filter out guest from person stats display
   const displayPeople = people.filter(p => !isGuestPerson(p.id));
 
-  const walkEvents = walks.filter(w => isWalkEvent(w.eventType));
-  const homeEvents = walks.filter(w => isHomeEvent(w.eventType));
+  // Period-filtered walks
+  const range = period === 'week' ? getStatsWeekRange() : getStatsMonthRange();
+  const periodWalks = getWalksInRange(walks, range.start, range.end);
   
-  const totalWalks = walkEvents.length;
-  const totalPee = walks.filter((w) => w.eventType.includes('pee') || w.eventType === 'both_walk').length;
-  const totalPoop = walks.filter((w) => w.eventType.includes('poop') || w.eventType === 'both_walk').length;
+  const periodWalkEvents = periodWalks.filter(w => isWalkEvent(w.eventType));
+  const periodHomeEvents = periodWalks.filter(w => isHomeEvent(w.eventType));
+  
+  const totalWalks = periodWalkEvents.length;
+  const totalPee = periodWalks.filter((w) => w.eventType.includes('pee') || w.eventType === 'both_walk').length;
+  const totalPoop = periodWalks.filter((w) => w.eventType.includes('poop') || w.eventType === 'both_walk').length;
+
+  const avgHour = getAverageWalkHour(periodWalks);
+
+  // Per-dog stats for the period
+  const getDogPeriodStats = (dogId: string) => {
+    const dogWalks = periodWalks.filter(w => w.dogId === dogId);
+    const walkEvents = dogWalks.filter(w => isWalkEvent(w.eventType));
+    const homeEvents = dogWalks.filter(w => isHomeEvent(w.eventType));
+    return {
+      totalWalks: walkEvents.length,
+      totalPee: dogWalks.filter(w => w.eventType.includes('pee') || w.eventType === 'both_walk').length,
+      totalPoop: dogWalks.filter(w => w.eventType.includes('poop') || w.eventType === 'both_walk').length,
+      homeEvents: homeEvents.length,
+    };
+  };
+
+  const getPersonPeriodStats = (personId: string) => {
+    const personWalks = periodWalks.filter(w => w.personId === personId);
+    return {
+      totalWalks: personWalks.filter(w => isWalkEvent(w.eventType)).length,
+    };
+  };
+
+  const periodLabel = period === 'week' ? 'Ten tydzień' : 'Ten miesiąc';
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -26,13 +64,39 @@ export function StatsScreen() {
       </header>
 
       <div className="px-6 space-y-6">
+        {/* Period Toggle */}
+        <div className="flex gap-2 p-1 bg-muted rounded-2xl">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setPeriod('week')}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              period === 'week'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground'
+            }`}
+          >
+            Tydzień
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setPeriod('month')}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              period === 'month'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground'
+            }`}
+          >
+            Miesiąc
+          </motion.button>
+        </div>
+
         {/* Overall Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="card-pet p-5"
         >
-          <h2 className="text-lg font-heading font-semibold mb-4">Ogółem</h2>
+          <h2 className="text-lg font-heading font-semibold mb-4">{periodLabel}</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-primary">{totalWalks}</p>
@@ -47,10 +111,18 @@ export function StatsScreen() {
               <p className="text-xs text-muted-foreground mt-1">💩 Kupa</p>
             </div>
           </div>
+
+          {/* Average Walk Hour */}
+          {avgHour && (
+            <div className="mt-4 pt-4 border-t border-border text-center">
+              <p className="text-xs text-muted-foreground mb-1">🕐 Średnia godzina spaceru</p>
+              <p className="text-2xl font-bold text-foreground font-mono">{avgHour}</p>
+            </div>
+          )}
         </motion.div>
 
         {/* Home Events Warning */}
-        {homeEvents.length > 0 && (
+        {periodHomeEvents.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -63,13 +135,13 @@ export function StatsScreen() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-destructive">
-                  {homeEvents.filter(w => w.eventType === 'pee_home').length}
+                  {periodHomeEvents.filter(w => w.eventType === 'pee_home').length}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">💧 Siku w domu</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-destructive">
-                  {homeEvents.filter(w => w.eventType === 'poop_home').length}
+                  {periodHomeEvents.filter(w => w.eventType === 'poop_home').length}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">💩 Kupa w domu</p>
               </div>
@@ -86,8 +158,9 @@ export function StatsScreen() {
         >
           <h2 className="text-lg font-heading font-semibold px-1">Pieski</h2>
           {dogs.map((dog, index) => {
-            const stats = getDogStats(dog.id);
-            const maxWalks = Math.max(...dogs.map((d) => getDogStats(d.id).totalWalks), 1);
+            const stats = getDogPeriodStats(dog.id);
+            const maxWalks = Math.max(...dogs.map((d) => getDogPeriodStats(d.id).totalWalks), 1);
+            const dogAvgHour = getAverageWalkHourForDog(periodWalks, dog.id);
             
             return (
               <motion.div
@@ -128,8 +201,8 @@ export function StatsScreen() {
                   />
                 </div>
                 
-                {/* Pee/Poop stats */}
-                <div className="flex gap-4 mt-3 text-sm">
+                {/* Pee/Poop stats + avg hour */}
+                <div className="flex gap-4 mt-3 text-sm flex-wrap">
                   <div className="flex items-center gap-1">
                     <span>💧</span>
                     <span className="text-muted-foreground">{stats.totalPee}</span>
@@ -142,6 +215,12 @@ export function StatsScreen() {
                     <div className="flex items-center gap-1 text-destructive">
                       <span>🚨</span>
                       <span>{stats.homeEvents} w domu</span>
+                    </div>
+                  )}
+                  {dogAvgHour && (
+                    <div className="flex items-center gap-1">
+                      <span>🕐</span>
+                      <span className="text-muted-foreground font-mono text-xs">{dogAvgHour}</span>
                     </div>
                   )}
                 </div>
@@ -176,8 +255,8 @@ export function StatsScreen() {
         >
           <h2 className="text-lg font-heading font-semibold px-1">Opiekunowie</h2>
           {displayPeople.map((person, index) => {
-            const stats = getPersonStats(person.id);
-            const maxWalks = Math.max(...displayPeople.map((p) => getPersonStats(p.id).totalWalks), 1);
+            const stats = getPersonPeriodStats(person.id);
+            const maxWalks = Math.max(...displayPeople.map((p) => getPersonPeriodStats(p.id).totalWalks), 1);
             
             return (
               <motion.div

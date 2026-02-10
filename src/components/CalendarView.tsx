@@ -205,6 +205,7 @@ export function CalendarView({ walks, dogs, people, getDogById, getPersonById }:
                         {walk.eventType === 'pee_walk' && '💧'}
                         {walk.eventType === 'poop_walk' && '💩'}
                         {walk.eventType === 'both_walk' && '💧💩'}
+                        {walk.eventType === 'nothing_walk' && '🚶'}
                       </span>
 
                       {/* Person */}
