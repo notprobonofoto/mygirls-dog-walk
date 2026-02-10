@@ -15,6 +15,7 @@ const walkEvents: { type: EventType; icon: string; label: string }[] = [
   { type: 'pee_walk', icon: '💧', label: 'Siku' },
   { type: 'poop_walk', icon: '💩', label: 'Kupa' },
   { type: 'both_walk', icon: '💧💩', label: 'Oba' },
+  { type: 'nothing_walk', icon: '🚶', label: 'Nic' },
 ];
 
 const homeEvents: { type: EventType; icon: string; label: string }[] = [

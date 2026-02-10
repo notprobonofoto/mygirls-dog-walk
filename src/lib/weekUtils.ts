@@ -28,7 +28,8 @@ export function getWeekWalksCount(walks: Walk[], dogId: string): number {
     // Only count walk events (not home events)
     const isWalkEvent = walk.eventType === 'pee_walk' || 
                         walk.eventType === 'poop_walk' || 
-                        walk.eventType === 'both_walk';
+                        walk.eventType === 'both_walk' ||
+                        walk.eventType === 'nothing_walk';
     
     if (!isWalkEvent) return false;
     if (walk.dogId !== dogId) return false;
@@ -58,7 +59,8 @@ export function getWalksForDay(walks: Walk[], date: Date): Walk[] {
     const walkDate = getWarsawDate(walk.timestamp);
     const isWalkEvent = walk.eventType === 'pee_walk' || 
                         walk.eventType === 'poop_walk' || 
-                        walk.eventType === 'both_walk';
+                        walk.eventType === 'both_walk' ||
+                        walk.eventType === 'nothing_walk';
     return isWalkEvent && isSameDay(walkDate, targetDate);
   });
 }
@@ -69,7 +71,8 @@ export function getWalksCountForMonth(walks: Walk[], date: Date): number {
   return walks.filter(walk => {
     const isWalkEvent = walk.eventType === 'pee_walk' || 
                         walk.eventType === 'poop_walk' || 
-                        walk.eventType === 'both_walk';
+                        walk.eventType === 'both_walk' ||
+                        walk.eventType === 'nothing_walk';
     
     if (!isWalkEvent) return false;
     
@@ -82,7 +85,8 @@ export function getTotalWalksCount(walks: Walk[]): number {
   return walks.filter(walk => {
     return walk.eventType === 'pee_walk' || 
            walk.eventType === 'poop_walk' || 
-           walk.eventType === 'both_walk';
+           walk.eventType === 'both_walk' ||
+           walk.eventType === 'nothing_walk';
   }).length;
 }
 

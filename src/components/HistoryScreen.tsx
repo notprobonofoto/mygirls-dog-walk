@@ -27,6 +27,8 @@ export function HistoryScreen() {
         return '💩';
       case 'both_walk':
         return '💧💩';
+      case 'nothing_walk':
+        return '🚶';
       case 'pee_home':
         return '🚨💧';
       case 'poop_home':

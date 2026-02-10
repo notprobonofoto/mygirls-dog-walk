@@ -12,7 +12,7 @@ export interface Person {
   initial: string;
 }
 
-export type EventType = 'pee_walk' | 'poop_walk' | 'both_walk' | 'pee_home' | 'poop_home';
+export type EventType = 'pee_walk' | 'poop_walk' | 'both_walk' | 'nothing_walk' | 'pee_home' | 'poop_home';
 
 export interface Walk {
   id: string;
