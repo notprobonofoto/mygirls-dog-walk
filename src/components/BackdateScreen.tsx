@@ -135,6 +135,11 @@ export function BackdateScreen() {
             disabled={(date) => date > new Date()}
             locale={pl}
             className="p-3 pointer-events-auto"
+            classNames={{
+              day_selected:
+                "bg-poop text-white rounded-full hover:bg-poop hover:text-white focus:bg-poop focus:text-white",
+              cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+            }}
           />
         </div>
 
