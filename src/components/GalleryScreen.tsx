@@ -13,7 +13,7 @@ interface Photo {
   id: string;
   url: string;
   description: string | null;
-  dog_id: string | null;
+  dog_ids: string[] | null;
   person_id: string | null;
   created_at: string;
 }
@@ -27,7 +27,7 @@ export function GalleryScreen() {
   const [showUpload, setShowUpload] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [description, setDescription] = useState('');
-  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
+  const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export function GalleryScreen() {
       const { error: insertError } = await supabase.from('photos').insert({
         url: urlData.publicUrl,
         description: description || null,
-        dog_id: selectedDogId,
+        dog_ids: selectedDogIds.length > 0 ? selectedDogIds : null,
         person_id: currentPersonId,
       });
 
@@ -96,7 +96,7 @@ export function GalleryScreen() {
       setSelectedFile(null);
       setPreviewUrl(null);
       setDescription('');
-      setSelectedDogId(null);
+      setSelectedDogIds([]);
     } catch (err) {
       console.error(err);
       toast.error('Błąd podczas wgrywania');
@@ -183,15 +183,19 @@ export function GalleryScreen() {
                   loading="lazy"
                 />
                 {/* Dog indicator dot */}
-                {photo.dog_id && (
-                  <div className="absolute top-1.5 right-1.5">
-                    {dogs.find(d => d.id === photo.dog_id)?.avatarUrl ? (
-                      <img
-                        src={dogs.find(d => d.id === photo.dog_id)?.avatarUrl}
-                        className="w-5 h-5 rounded-full border border-white/80"
-                        alt=""
-                      />
-                    ) : null}
+                {photo.dog_ids && photo.dog_ids.length > 0 && (
+                  <div className="absolute top-1.5 right-1.5 flex -space-x-1">
+                    {photo.dog_ids.map(dogId => {
+                      const dog = dogs.find(d => d.id === dogId);
+                      return dog?.avatarUrl ? (
+                        <img
+                          key={dogId}
+                          src={dog.avatarUrl}
+                          className="w-5 h-5 rounded-full border border-white/80"
+                          alt=""
+                        />
+                      ) : null;
+                    })}
                   </div>
                 )}
               </motion.div>
@@ -228,9 +232,11 @@ export function GalleryScreen() {
               <motion.button
                 key={dog.id}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedDogId(selectedDogId === dog.id ? null : dog.id)}
+                onClick={() => setSelectedDogIds(prev =>
+                  prev.includes(dog.id) ? prev.filter(id => id !== dog.id) : [...prev, dog.id]
+                )}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedDogId === dog.id
+                  selectedDogIds.includes(dog.id)
                     ? 'bg-primary/20 border-2 border-primary'
                     : 'bg-muted border-2 border-transparent'
                 }`}
@@ -322,8 +328,8 @@ export function GalleryScreen() {
             {/* Dog + date info */}
             <div className="pb-6 px-4 text-center" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-center gap-2 text-white/50 text-xs">
-                {lightboxPhoto.dog_id && dogs.find(d => d.id === lightboxPhoto.dog_id) && (
-                  <span>{dogs.find(d => d.id === lightboxPhoto.dog_id)?.name}</span>
+                {lightboxPhoto.dog_ids && lightboxPhoto.dog_ids.length > 0 && (
+                  <span>{lightboxPhoto.dog_ids.map(id => dogs.find(d => d.id === id)?.name).filter(Boolean).join(' & ')}</span>
                 )}
                 <span>•</span>
                 <span>{new Date(lightboxPhoto.created_at).toLocaleDateString('pl-PL')}</span>

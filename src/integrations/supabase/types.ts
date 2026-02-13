@@ -81,7 +81,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          dog_id: string | null
+          dog_ids: string[] | null
           id: string
           person_id: string | null
           url: string
@@ -89,7 +89,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
-          dog_id?: string | null
+          dog_ids?: string[] | null
           id?: string
           person_id?: string | null
           url: string
@@ -97,7 +97,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
-          dog_id?: string | null
+          dog_ids?: string[] | null
           id?: string
           person_id?: string | null
           url?: string
