@@ -105,3 +105,60 @@ export function getAverageWalkHour(walks: Walk[]): string | null {
 export function getAverageWalkHourForDog(walks: Walk[], dogId: string): string | null {
   return getAverageWalkHour(walks.filter(w => w.dogId === dogId));
 }
+
+/**
+ * Time-of-day periods for walk averages
+ */
+type TimePeriod = 'morning' | 'afternoon' | 'evening';
+
+interface PeriodAverage {
+  period: TimePeriod;
+  label: string;
+  emoji: string;
+  avg: string | null;
+  count: number;
+}
+
+function getTimePeriod(hour: number): TimePeriod {
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
+}
+
+/**
+ * Calculate average walk hours split by morning (before 12), afternoon (12-17), evening (17+)
+ */
+export function getAverageWalkHoursByPeriod(walks: Walk[]): PeriodAverage[] {
+  const walkEvents = walks.filter(w => w.eventType.endsWith('_walk'));
+
+  const buckets: Record<TimePeriod, number[]> = {
+    morning: [],
+    afternoon: [],
+    evening: [],
+  };
+
+  for (const w of walkEvents) {
+    const d = getWarsawDate(w.timestamp);
+    const minutes = d.getHours() * 60 + d.getMinutes();
+    const period = getTimePeriod(d.getHours());
+    buckets[period].push(minutes);
+  }
+
+  const meta: Record<TimePeriod, { label: string; emoji: string }> = {
+    morning: { label: 'Poranny', emoji: '🌅' },
+    afternoon: { label: 'Południowy', emoji: '☀️' },
+    evening: { label: 'Wieczorny', emoji: '🌙' },
+  };
+
+  return (['morning', 'afternoon', 'evening'] as TimePeriod[]).map(period => {
+    const mins = buckets[period];
+    let avg: string | null = null;
+    if (mins.length > 0) {
+      const avgMin = Math.round(mins.reduce((a, b) => a + b, 0) / mins.length);
+      const h = Math.floor(avgMin / 60);
+      const m = avgMin % 60;
+      avg = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+    return { period, ...meta[period], avg, count: mins.length };
+  });
+}
