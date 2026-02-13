@@ -5,10 +5,10 @@ import { useSharedData } from '@/hooks/useSharedData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { EventType, Walk } from '@/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EVENT_OPTIONS: { type: EventType; icon: string; label: string }[] = [
@@ -199,9 +199,12 @@ export function HistoryScreen() {
       {/* Edit Dialog */}
       <Dialog open={!!editingWalk} onOpenChange={(open) => { if (!open) setEditingWalk(null); }}>
         <DialogContent className="max-w-[90vw] rounded-2xl">
-          <DialogHeader>
+          <DialogHeader className="relative">
             <DialogTitle>Edytuj spacer</DialogTitle>
             <DialogDescription>Zmień szczegóły lub usuń wpis</DialogDescription>
+            <DialogClose className="absolute right-0 top-0">
+              <X className="w-5 h-5" />
+            </DialogClose>
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
