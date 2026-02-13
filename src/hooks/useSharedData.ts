@@ -85,6 +85,16 @@ export function useSharedData() {
               eventType: w.event_type as EventType,
             };
             setWalks(prev => [newWalk, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            const w = payload.new;
+            const updated: Walk = {
+              id: w.id,
+              timestamp: w.timestamp,
+              dogId: w.dog_id,
+              personId: w.person_id,
+              eventType: w.event_type as EventType,
+            };
+            setWalks(prev => prev.map(walk => walk.id === updated.id ? updated : walk));
           } else if (payload.eventType === 'DELETE') {
             setWalks(prev => prev.filter(w => w.id !== payload.old.id));
           }
@@ -142,6 +152,22 @@ export function useSharedData() {
     );
   };
 
+  const updateWalk = async (walkId: string, updates: { dogId?: string; personId?: string; eventType?: EventType; timestamp?: string }) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.dogId !== undefined) dbUpdates.dog_id = updates.dogId;
+    if (updates.personId !== undefined) dbUpdates.person_id = updates.personId;
+    if (updates.eventType !== undefined) dbUpdates.event_type = updates.eventType;
+    if (updates.timestamp !== undefined) dbUpdates.timestamp = updates.timestamp;
+
+    const { error } = await supabase.from('walks').update(dbUpdates).eq('id', walkId);
+    if (error) { console.error('Error updating walk:', error); throw error; }
+  };
+
+  const deleteWalk = async (walkId: string) => {
+    const { error } = await supabase.from('walks').delete().eq('id', walkId);
+    if (error) { console.error('Error deleting walk:', error); throw error; }
+  };
+
   const getDogById = (id: string) => dogs.find((d) => d.id === id);
   const getPersonById = (id: string) => people.find((p) => p.id === id);
 
@@ -185,6 +211,8 @@ export function useSharedData() {
     walks,
     loading,
     addWalk,
+    updateWalk,
+    deleteWalk,
     updateDog,
     getDogById,
     getPersonById,
