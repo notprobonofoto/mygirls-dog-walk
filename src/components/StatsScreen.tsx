@@ -7,7 +7,7 @@ import {
   getStatsWeekRange, 
   getStatsMonthRange, 
   getWalksInRange, 
-  getAverageWalkHour, 
+  getAverageWalkHoursByPeriod, 
   getAverageWalkHourForDog 
 } from '@/lib/statsUtils';
 
@@ -30,7 +30,7 @@ export function StatsScreen() {
   const totalPee = periodWalks.filter((w) => w.eventType.includes('pee') || w.eventType === 'both_walk').length;
   const totalPoop = periodWalks.filter((w) => w.eventType.includes('poop') || w.eventType === 'both_walk').length;
 
-  const avgHour = getAverageWalkHour(periodWalks);
+  const periodAverages = getAverageWalkHoursByPeriod(periodWalks);
 
   // Per-dog stats for the period
   const getDogPeriodStats = (dogId: string) => {
@@ -112,11 +112,24 @@ export function StatsScreen() {
             </div>
           </div>
 
-          {/* Average Walk Hour */}
-          {avgHour && (
-            <div className="mt-4 pt-4 border-t border-border text-center">
-              <p className="text-xs text-muted-foreground mb-1">🕐 Średnia godzina spaceru</p>
-              <p className="text-2xl font-bold text-foreground font-mono">{avgHour}</p>
+          {/* Average Walk Hours by Period */}
+          {periodAverages.some(p => p.avg) && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground mb-3 text-center">🕐 Średnie godziny spacerów</p>
+              <div className="grid grid-cols-3 gap-3">
+                {periodAverages.map(p => (
+                  <div key={p.period} className="text-center">
+                    <p className="text-lg mb-0.5">{p.emoji}</p>
+                    <p className="text-xs text-muted-foreground">{p.label}</p>
+                    {p.avg ? (
+                      <p className="text-lg font-bold text-foreground font-mono">{p.avg}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">—</p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground">{p.count} spacerów</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </motion.div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Home, Clock, BarChart3, Dog, RotateCcw } from 'lucide-react';
+import { Home, Clock, BarChart3, Dog, RotateCcw, Camera } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -11,6 +11,7 @@ const tabs = [
   { id: 'history', icon: Clock, label: 'Historia' },
   { id: 'backdate', icon: RotateCcw, label: 'Wstecz' },
   { id: 'stats', icon: BarChart3, label: 'Statystyki' },
+  { id: 'gallery', icon: Camera, label: 'Galeria' },
   { id: 'dogs', icon: Dog, label: 'Pieski' },
 ];
 
@@ -31,7 +32,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               key={tab.id}
               whileTap={{ scale: 0.9 }}
               onClick={() => onTabChange(tab.id)}
-              className="flex flex-col items-center py-2 px-4 min-w-[60px] relative"
+              className="flex flex-col items-center py-2 px-2 min-w-[48px] relative"
             >
               {isActive && (
                 <motion.div
@@ -41,7 +42,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 />
               )}
               <Icon
-                size={22}
+                size={20}
                 className={`relative z-10 transition-colors ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}

@@ -77,6 +77,33 @@ export type Database = {
         }
         Relationships: []
       }
+      photos: {
+        Row: {
+          created_at: string
+          description: string | null
+          dog_id: string | null
+          id: string
+          person_id: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          dog_id?: string | null
+          id?: string
+          person_id?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          dog_id?: string | null
+          id?: string
+          person_id?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       walks: {
         Row: {
           created_at: string
