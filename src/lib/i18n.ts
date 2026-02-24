@@ -144,6 +144,24 @@ const translations = {
     'settings.theme_blue': 'Ocean',
     'settings.theme_neon': 'Neon',
     'settings.theme_pink': 'Pink',
+    'settings.visual_style': 'Styl wizualny',
+    'settings.style_standard': 'Standard',
+    'settings.style_slim': 'Slim',
+    'settings.style_fun': 'Fun',
+    'settings.style_glass': 'Glass',
+    'settings.style_bold': 'Bold',
+    'settings.style_standard_desc': 'Klasyczny wygląd',
+    'settings.style_slim_desc': 'Minimalizm',
+    'settings.style_fun_desc': 'Zabawa i animacje',
+    'settings.style_glass_desc': 'Przezroczystość',
+    'settings.style_bold_desc': 'Mocne linie',
+
+    // Walk bonus
+    'walk.timer': 'Czas spaceru',
+    'walk.note_placeholder': 'Notatka do spaceru...',
+    'walk.last_walk': 'Ostatni spacer',
+    'walk.ago': 'temu',
+    'walk.no_walks_yet': 'Brak spacerów',
 
     // Common
     'common.error': 'Błąd',
@@ -290,6 +308,24 @@ const translations = {
     'settings.theme_blue': 'Ocean',
     'settings.theme_neon': 'Neon',
     'settings.theme_pink': 'Pink',
+    'settings.visual_style': 'Visual Style',
+    'settings.style_standard': 'Standard',
+    'settings.style_slim': 'Slim',
+    'settings.style_fun': 'Fun',
+    'settings.style_glass': 'Glass',
+    'settings.style_bold': 'Bold',
+    'settings.style_standard_desc': 'Classic look',
+    'settings.style_slim_desc': 'Minimalism',
+    'settings.style_fun_desc': 'Fun & animations',
+    'settings.style_glass_desc': 'Transparency',
+    'settings.style_bold_desc': 'Strong lines',
+
+    // Walk bonus
+    'walk.timer': 'Walk time',
+    'walk.note_placeholder': 'Walk note...',
+    'walk.last_walk': 'Last walk',
+    'walk.ago': 'ago',
+    'walk.no_walks_yet': 'No walks yet',
 
     // Common
     'common.error': 'Error',

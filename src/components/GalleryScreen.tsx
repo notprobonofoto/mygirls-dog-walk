@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSharedData } from '@/hooks/useSharedData';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useApp } from '@/contexts/AppContext';
+import { useVisualStyle } from '@/hooks/useVisualStyle';
 import { Plus, X, Trash2, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ export function GalleryScreen() {
   const { dogs } = useSharedData();
   const { currentPersonId } = useCurrentUser();
   const { t } = useApp();
+  const vs = useVisualStyle();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -63,7 +65,7 @@ export function GalleryScreen() {
   }, [fetchPhotos]);
 
   // Filter photos by tab
-  const filteredPhotos = photos.filter(photo => {
+  const filteredPhotos = !vs.galleryTabs ? photos : photos.filter(photo => {
     if (!dog1 || !dog2) return true;
     if (activeTab === 'all_dog_1') {
       return photo.dog_ids?.includes(dog1.id) && !(photo.dog_ids?.includes(dog2.id));
@@ -193,7 +195,7 @@ export function GalleryScreen() {
         </div>
         <Button
           size="icon"
-          className="rounded-full bg-primary text-primary-foreground w-12 h-12 shadow-lg"
+          className={`${vs.uploadButton} bg-primary text-primary-foreground w-12 h-12 shadow-lg`}
           onClick={() => fileInputRef.current?.click()}
         >
           <Plus className="w-6 h-6" />
@@ -207,34 +209,36 @@ export function GalleryScreen() {
         />
       </header>
 
-      {/* Sub-tabs */}
-      <div className="px-6 mb-4">
-        <div className="flex gap-1 p-1 bg-muted rounded-2xl">
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                activeTab === tab.id
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground'
-              }`}
-            >
-              {tab.id === 'together' ? (
-                <div className="flex -space-x-1">
-                  {tab.avatars?.map((av, i) => av ? (
-                    <img key={i} src={av} className="w-5 h-5 rounded-full border border-card" alt="" />
-                  ) : null)}
-                </div>
-              ) : tab.avatar ? (
-                <img src={tab.avatar} className="w-5 h-5 rounded-full" alt="" />
-              ) : null}
-              <span>{tab.label}</span>
-            </motion.button>
-          ))}
+      {/* Sub-tabs (hidden in Slim variant) */}
+      {vs.galleryTabs && (
+        <div className="px-6 mb-4">
+          <div className="flex gap-1 p-1 bg-muted rounded-2xl">
+            {tabs.map((tab) => (
+              <motion.button
+                key={tab.id}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === tab.id
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {tab.id === 'together' ? (
+                  <div className="flex -space-x-1">
+                    {tab.avatars?.map((av, i) => av ? (
+                      <img key={i} src={av} className="w-5 h-5 rounded-full border border-card" alt="" />
+                    ) : null)}
+                  </div>
+                ) : tab.avatar ? (
+                  <img src={tab.avatar} className="w-5 h-5 rounded-full" alt="" />
+                ) : null}
+                <span>{tab.label}</span>
+              </motion.button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Photo Grid */}
       <div className="px-1">

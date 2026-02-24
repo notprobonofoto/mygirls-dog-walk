@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Home, Clock, BarChart3, Dog, RotateCcw, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { useVisualStyle } from '@/hooks/useVisualStyle';
 
 interface BottomNavProps {
   activeTab: string;
@@ -18,12 +19,13 @@ const tabDefs = [
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useApp();
+  const vs = useVisualStyle();
 
   return (
     <motion.nav
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-30 pb-safe"
+      className={`fixed bottom-0 left-0 right-0 ${vs.navBar} z-30 pb-safe`}
     >
       <div className="flex justify-around items-center py-2 px-4">
         {tabDefs.map((tab) => {
@@ -40,7 +42,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-2xl"
+                  className={`absolute inset-0 ${vs.navActive}`}
                   transition={{ type: 'spring', duration: 0.3 }}
                 />
               )}

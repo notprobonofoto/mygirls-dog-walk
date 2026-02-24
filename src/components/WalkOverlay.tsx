@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dog, Person, EventType } from '@/types';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useApp } from '@/contexts/AppContext';
+import { useVisualStyle } from '@/hooks/useVisualStyle';
 import { isGuestPerson } from '@/lib/weekUtils';
 
 interface WalkOverlayProps {
@@ -19,10 +20,32 @@ type EventCategory = 'walk' | 'home';
 export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }: WalkOverlayProps) {
   const { currentPersonId } = useCurrentUser();
   const { t } = useApp();
+  const vs = useVisualStyle();
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [walkNote, setWalkNote] = useState('');
+
+  // Timer for Fun variant
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (isOpen && vs.walkTimer) {
+      setTimerSeconds(0);
+      timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isOpen, vs.walkTimer]);
+
+  const formatTimer = (s: number) => {
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const familyMembers = people.filter(p => !isGuestPerson(p.id));
   const guestPerson = people.find(p => isGuestPerson(p.id));
@@ -40,12 +63,15 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
 
       setShowSuccess(true);
       if (navigator.vibrate) navigator.vibrate(50);
+      if (timerRef.current) clearInterval(timerRef.current);
 
       setTimeout(() => {
         setShowSuccess(false);
         setSelectedDog(null);
         setSelectedEvent(null);
         setSelectedPersonId(null);
+        setWalkNote('');
+        setTimerSeconds(0);
         onClose();
       }, 800);
     } catch (error) {
@@ -57,6 +83,9 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
     setSelectedDog(null);
     setSelectedEvent(null);
     setSelectedPersonId(null);
+    setWalkNote('');
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimerSeconds(0);
     onClose();
   };
 
@@ -107,7 +136,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-card rounded-t-[2rem] z-50 max-h-[90vh] overflow-y-auto"
+            className={`fixed bottom-0 left-0 right-0 bg-card ${vs.styleName === 'glass' ? 'bg-card/80 backdrop-blur-2xl' : ''} rounded-t-[2rem] z-50 max-h-[90vh] overflow-y-auto`}
           >
             {showSuccess ? (
               <motion.div
@@ -123,10 +152,23 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                   🐾
                 </motion.span>
                 <p className="text-xl font-semibold text-primary">{t('walk.saved')}</p>
+                {vs.walkTimer && timerSeconds > 0 && (
+                  <p className="text-sm text-muted-foreground mt-2">{t('walk.timer')}: {formatTimer(timerSeconds)}</p>
+                )}
               </motion.div>
             ) : (
               <div className="p-6 pb-10">
                 <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
+
+                {/* Timer for Fun variant */}
+                {vs.walkTimer && (
+                  <div className="text-center mb-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                      <span className="text-lg">⏱️</span>
+                      <span className="font-mono text-xl font-bold text-primary">{formatTimer(timerSeconds)}</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Person Selection */}
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
@@ -140,10 +182,8 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                         key={person.id}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setSelectedPersonId(person.id)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
-                          isSelected
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border bg-card hover:border-primary/30'
+                        className={`flex items-center gap-2 ${vs.chip} ${
+                          isSelected ? vs.chipSelected : 'border-border bg-card hover:border-primary/30'
                         }`}
                       >
                         <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
@@ -158,7 +198,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedPersonId('guest')}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+                      className={`flex items-center gap-2 ${vs.chip} ${
                         selectedPersonId === 'guest'
                           ? 'border-muted-foreground bg-muted'
                           : 'border-border bg-card hover:border-muted-foreground/50'
@@ -182,7 +222,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                       key={dog.id}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedDog(dog.id)}
-                      className={`flex-1 card-pet p-4 flex flex-col items-center transition-all ${
+                      className={`flex-1 ${vs.card} p-4 flex flex-col items-center transition-all ${
                         selectedDog === dog.id
                           ? 'ring-2 ring-primary ring-offset-2 ring-offset-card'
                           : ''
@@ -215,9 +255,9 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                       key={event.type}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleEventSelect(event.type)}
-                      className={`p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+                      className={`${vs.eventButton} ${
                         selectedEvent === event.type
-                          ? 'border-primary bg-primary/10'
+                          ? vs.eventButtonSelected
                           : 'border-border bg-card hover:border-primary/30'
                       }`}
                     >
@@ -236,13 +276,13 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
                   <span className="text-destructive">🚨</span> {t('walk.at_home')}
                 </h3>
-                <div className="grid grid-cols-2 gap-2 mb-8">
+                <div className="grid grid-cols-2 gap-2 mb-6">
                   {homeEvents.map((event) => (
                     <motion.button
                       key={event.type}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleEventSelect(event.type)}
-                      className={`p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all ${
+                      className={`${vs.eventButton} ${
                         selectedEvent === event.type
                           ? 'border-destructive bg-destructive/10'
                           : 'border-destructive/30 bg-destructive/5 hover:border-destructive/50'
@@ -259,15 +299,28 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                   ))}
                 </div>
 
+                {/* Walk notes for Glass variant */}
+                {vs.walkNotes && (
+                  <div className="mb-6">
+                    <input
+                      type="text"
+                      value={walkNote}
+                      onChange={(e) => setWalkNote(e.target.value)}
+                      placeholder={t('walk.note_placeholder')}
+                      className="w-full px-4 py-3 rounded-xl border border-border/50 bg-card/40 backdrop-blur-sm text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground/50"
+                    />
+                  </div>
+                )}
+
                 {/* Save button */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
                   disabled={!canSave}
-                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+                  className={`${vs.actionButton} transition-all ${
                     canSave
-                      ? 'btn-main'
+                      ? 'bg-primary text-primary-foreground shadow-[var(--shadow-button)]'
                       : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
