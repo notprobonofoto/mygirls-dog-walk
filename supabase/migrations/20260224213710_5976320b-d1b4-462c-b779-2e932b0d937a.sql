@@ -1,0 +1,2 @@
+ALTER TABLE public.walks DROP CONSTRAINT walks_event_type_check;
+ALTER TABLE public.walks ADD CONSTRAINT walks_event_type_check CHECK (event_type IN ('pee_walk', 'poop_walk', 'both_walk', 'nothing_walk', 'pee_home', 'poop_home'));
