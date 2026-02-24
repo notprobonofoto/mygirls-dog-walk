@@ -124,16 +124,19 @@ export type Database = {
           language: string
           person_id: string
           theme: string
+          visual_style: string
         }
         Insert: {
           language?: string
           person_id: string
           theme?: string
+          visual_style?: string
         }
         Update: {
           language?: string
           person_id?: string
           theme?: string
+          visual_style?: string
         }
         Relationships: []
       }

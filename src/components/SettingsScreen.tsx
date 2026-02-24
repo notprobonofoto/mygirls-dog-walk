@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useApp, ThemeName } from '@/contexts/AppContext';
-import { ArrowLeft, Eye, LogOut, Palette, Globe, Lock } from 'lucide-react';
+import { useApp, ThemeName, VisualStyleName } from '@/contexts/AppContext';
+import { ArrowLeft, Eye, LogOut, Palette, Globe, Lock, Layout } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SettingsScreenProps {
@@ -16,8 +16,16 @@ const themes: { id: ThemeName; colors: string[] }[] = [
   { id: 'pink', colors: ['#EC4899', '#F472B6', '#FDF2F8'] },
 ];
 
+const visualStyles: { id: VisualStyleName; icon: string }[] = [
+  { id: 'standard', icon: '🏠' },
+  { id: 'slim', icon: '📐' },
+  { id: 'fun', icon: '🎉' },
+  { id: 'glass', icon: '💎' },
+  { id: 'bold', icon: '💪' },
+];
+
 export function SettingsScreen({ onClose }: SettingsScreenProps) {
-  const { t, theme, setTheme, language, setLanguage, appPassword, changePassword, logout } = useApp();
+  const { t, theme, setTheme, visualStyle, setVisualStyle, language, setLanguage, appPassword, changePassword, logout } = useApp();
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -35,10 +43,6 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-  };
-
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="pt-12 pb-6 px-6 flex items-center gap-4">
@@ -53,10 +57,46 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
       </header>
 
       <div className="px-6 space-y-6">
+        {/* Visual Style */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-pet p-5"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <Layout className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-heading font-semibold">{t('settings.visual_style')}</h2>
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            {visualStyles.map((vs) => (
+              <motion.button
+                key={vs.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setVisualStyle(vs.id)}
+                className={`p-2 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                  visualStyle === vs.id
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border bg-card hover:border-primary/30'
+                }`}
+              >
+                <span className="text-2xl">{vs.icon}</span>
+                <span className="text-[9px] font-medium leading-tight">
+                  {t(`settings.style_${vs.id}` as any)}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+          {/* Style description */}
+          <p className="text-xs text-muted-foreground mt-3 text-center">
+            {t(`settings.style_${visualStyle}_desc` as any)}
+          </p>
+        </motion.div>
+
         {/* Theme */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
           className="card-pet p-5"
         >
           <div className="flex items-center gap-3 mb-4">
@@ -96,7 +136,7 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
+          transition={{ delay: 0.1 }}
           className="card-pet p-5"
         >
           <div className="flex items-center gap-3 mb-4">
@@ -133,15 +173,13 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.15 }}
           className="card-pet p-5"
         >
           <div className="flex items-center gap-3 mb-4">
             <Lock className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-heading font-semibold">{t('settings.password')}</h2>
           </div>
-
-          {/* Current password */}
           <div className="bg-muted rounded-xl p-3 mb-4">
             <p className="text-xs text-muted-foreground mb-1">{t('settings.current_password')}</p>
             <div className="flex items-center gap-2">
@@ -156,8 +194,6 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
               </button>
             </div>
           </div>
-
-          {/* Change password */}
           <div className="flex gap-2">
             <input
               type="text"
@@ -180,11 +216,11 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.2 }}
         >
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={handleLogout}
+            onClick={logout}
             className="w-full card-pet p-5 flex items-center gap-4 text-left"
           >
             <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">

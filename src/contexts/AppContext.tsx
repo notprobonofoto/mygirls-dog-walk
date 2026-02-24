@@ -4,6 +4,7 @@ import { Language, t as translate, TranslationKey } from '@/lib/i18n';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 export type ThemeName = 'standard' | 'dark' | 'blue' | 'neon' | 'pink';
+export type VisualStyleName = 'standard' | 'slim' | 'fun' | 'glass' | 'bold';
 
 interface AppContextType {
   // Language
@@ -14,6 +15,10 @@ interface AppContextType {
   // Theme
   theme: ThemeName;
   setTheme: (theme: ThemeName) => void;
+
+  // Visual style
+  visualStyle: VisualStyleName;
+  setVisualStyle: (style: VisualStyleName) => void;
 
   // Password
   isUnlocked: boolean;
@@ -30,6 +35,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { currentPersonId } = useCurrentUser();
   const [language, setLanguageState] = useState<Language>('pl');
   const [theme, setThemeState] = useState<ThemeName>('standard');
+  const [visualStyle, setVisualStyleState] = useState<VisualStyleName>('standard');
   const [appPassword, setAppPassword] = useState<string | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(true);
@@ -63,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (data) {
         setLanguageState(data.language as Language);
         setThemeState(data.theme as ThemeName);
+        if ((data as any).visual_style) setVisualStyleState((data as any).visual_style as VisualStyleName);
       }
     };
     loadPrefs();
@@ -77,24 +84,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [theme]);
 
-  const savePrefs = useCallback(async (newTheme?: ThemeName, newLang?: Language) => {
+  const savePrefs = useCallback(async (newTheme?: ThemeName, newLang?: Language, newStyle?: VisualStyleName) => {
     if (!currentPersonId) return;
     const prefs = {
       person_id: currentPersonId,
       theme: newTheme || theme,
       language: newLang || language,
-    };
+      visual_style: newStyle || visualStyle,
+    } as any;
     await supabase.from('user_preferences').upsert(prefs, { onConflict: 'person_id' });
-  }, [currentPersonId, theme, language]);
+  }, [currentPersonId, theme, language, visualStyle]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    savePrefs(undefined, lang);
+    savePrefs(undefined, lang, undefined);
   }, [savePrefs]);
 
   const setTheme = useCallback((t: ThemeName) => {
     setThemeState(t);
-    savePrefs(t, undefined);
+    savePrefs(t, undefined, undefined);
+  }, [savePrefs]);
+
+  const setVisualStyle = useCallback((s: VisualStyleName) => {
+    setVisualStyleState(s);
+    savePrefs(undefined, undefined, s);
   }, [savePrefs]);
 
   const checkPassword = useCallback((input: string) => {
@@ -129,6 +142,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         t: tFn,
         theme,
         setTheme,
+        visualStyle,
+        setVisualStyle,
         isUnlocked,
         appPassword,
         checkPassword,

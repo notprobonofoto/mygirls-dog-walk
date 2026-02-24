@@ -4,10 +4,13 @@ import { WalkOverlay } from './WalkOverlay';
 import { useSharedData } from '@/hooks/useSharedData';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useApp } from '@/contexts/AppContext';
+import { useVisualStyle } from '@/hooks/useVisualStyle';
 import { EventType } from '@/types';
 import { getWalkCountLabel } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
 import { Settings, Globe } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { pl, enUS } from 'date-fns/locale';
 
 interface HomeScreenProps {
   onOpenSettings: () => void;
@@ -18,6 +21,7 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
   const { dogs, people, addWalk, walks, getDogAge, isHomeEvent } = useSharedData();
   const { currentPersonId, clearPerson } = useCurrentUser();
   const { t, language, setLanguage } = useApp();
+  const vs = useVisualStyle();
 
   const currentPerson = people.find(p => p.id === currentPersonId);
 
@@ -38,43 +42,46 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
     setLanguage(language === 'pl' ? 'en' : 'pl');
   };
 
+  // Last walk per dog (for Bold variant)
+  const getLastWalk = (dogId: string) => {
+    const dogWalks = walks
+      .filter(w => w.dogId === dogId && !isHomeEvent(w.eventType))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return dogWalks[0] || null;
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated Background Decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[
-          { top: '5%', left: '8%', size: 'text-7xl', dur: 8, delay: 0, y: [-10, 12, -10], rot: [0, 6, 0] },
-          { top: '12%', right: '6%', size: 'text-4xl', dur: 10, delay: 1, y: [10, -15, 10], rot: [0, -5, 0] },
-          { top: '25%', left: '75%', size: 'text-3xl', dur: 7, delay: 0.3, y: [-8, 10, -8], rot: [0, 8, 0] },
-          { top: '18%', left: '40%', size: 'text-5xl', dur: 11, delay: 2, y: [5, -12, 5], rot: [0, -3, 0] },
-          { top: '35%', left: '5%', size: 'text-2xl', dur: 9, delay: 1.5, y: [-6, 14, -6], rot: [0, 10, 0] },
-          { top: '45%', right: '12%', size: 'text-8xl', dur: 13, delay: 0.8, y: [-5, 15, -5], rot: [0, -4, 0] },
-          { top: '55%', left: '20%', size: 'text-3xl', dur: 8.5, delay: 3, y: [8, -10, 8], rot: [0, 7, 0] },
-          { top: '60%', left: '60%', size: 'text-5xl', dur: 10.5, delay: 1.2, y: [-12, 8, -12], rot: [0, -6, 0] },
-          { top: '70%', left: '85%', size: 'text-2xl', dur: 7.5, delay: 2.5, y: [6, -8, 6], rot: [0, 12, 0] },
-          { top: '75%', left: '10%', size: 'text-6xl', dur: 12, delay: 0.5, y: [-7, 11, -7], rot: [0, -8, 0] },
-          { top: '80%', left: '45%', size: 'text-xl', dur: 9.5, delay: 3.5, y: [10, -6, 10], rot: [0, 5, 0] },
-          { top: '30%', left: '30%', size: 'text-xl', dur: 14, delay: 4, y: [-4, 9, -4], rot: [0, -10, 0] },
-          { top: '50%', left: '50%', size: 'text-4xl', dur: 11.5, delay: 1.8, y: [7, -13, 7], rot: [0, 4, 0] },
-          { top: '15%', left: '55%', size: 'text-2xl', dur: 8, delay: 2.8, y: [-9, 7, -9], rot: [0, -7, 0] },
-          { top: '85%', left: '70%', size: 'text-6xl', dur: 10, delay: 0.2, y: [4, -11, 4], rot: [0, 9, 0] },
-        ].map((paw, i) => (
-          <motion.div
-            key={i}
-            animate={{ y: paw.y, rotate: paw.rot }}
-            transition={{ duration: paw.dur, repeat: Infinity, ease: 'easeInOut', delay: paw.delay }}
-            className={`absolute ${paw.size} opacity-[0.07]`}
-            style={{ top: paw.top, left: paw.left, right: (paw as any).right }}
-          >
-            🐾
-          </motion.div>
-        ))}
-        
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
-      </div>
+      {vs.showPawAnimations && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[
+            { top: '5%', left: '8%', size: 'text-7xl', dur: 8, delay: 0, y: [-10, 12, -10], rot: [0, 6, 0] },
+            { top: '12%', right: '6%', size: 'text-4xl', dur: 10, delay: 1, y: [10, -15, 10], rot: [0, -5, 0] },
+            { top: '25%', left: '75%', size: 'text-3xl', dur: 7, delay: 0.3, y: [-8, 10, -8], rot: [0, 8, 0] },
+            { top: '18%', left: '40%', size: 'text-5xl', dur: 11, delay: 2, y: [5, -12, 5], rot: [0, -3, 0] },
+            { top: '45%', right: '12%', size: 'text-8xl', dur: 13, delay: 0.8, y: [-5, 15, -5], rot: [0, -4, 0] },
+            { top: '60%', left: '60%', size: 'text-5xl', dur: 10.5, delay: 1.2, y: [-12, 8, -12], rot: [0, -6, 0] },
+            { top: '75%', left: '10%', size: 'text-6xl', dur: 12, delay: 0.5, y: [-7, 11, -7], rot: [0, -8, 0] },
+            { top: '85%', left: '70%', size: 'text-6xl', dur: 10, delay: 0.2, y: [4, -11, 4], rot: [0, 9, 0] },
+          ].map((paw, i) => (
+            <motion.div
+              key={i}
+              animate={{ y: paw.y, rotate: paw.rot }}
+              transition={{ duration: paw.dur, repeat: Infinity, ease: 'easeInOut', delay: paw.delay }}
+              className={`absolute ${paw.size} opacity-[0.07]`}
+              style={{ top: paw.top, left: paw.left, right: (paw as any).right }}
+            >
+              🐾
+            </motion.div>
+          ))}
+          
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+        </div>
+      )}
 
-      {/* Top bar with language toggle and settings */}
+      {/* Top bar */}
       <div className="relative z-10 flex justify-between items-center pt-4 px-6">
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -154,7 +161,7 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
         transition={{ delay: 0.3 }}
         className="relative z-10 px-6 mb-8"
       >
-        <div className="card-pet p-4">
+        <div className={vs.card + ' p-4'}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm text-muted-foreground">{t('home.today')}</p>
@@ -178,7 +185,6 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
             </div>
           </div>
           
-          {/* Home events warning */}
           {todayHomeEvents.length > 0 && (
             <div className="pt-3 border-t border-destructive/20">
               <div className="flex items-center gap-2 text-destructive text-sm">
@@ -192,6 +198,44 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
         </div>
       </motion.div>
 
+      {/* Bold variant: Last walk widget */}
+      {vs.lastWalkWidget && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="relative z-10 px-6 mb-6"
+        >
+          <div className={vs.card + ' p-4'}>
+            <p className="text-sm font-semibold text-muted-foreground mb-3">{t('walk.last_walk')}</p>
+            <div className="flex gap-3">
+              {dogs.map(dog => {
+                const lastWalk = getLastWalk(dog.id);
+                return (
+                  <div key={dog.id} className="flex-1 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full overflow-hidden" style={{ backgroundColor: dog.avatarUrl ? 'transparent' : dog.color }}>
+                      {dog.avatarUrl ? (
+                        <img src={dog.avatarUrl} alt={dog.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-sm">🐕</div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold truncate">{dog.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {lastWalk 
+                          ? formatDistanceToNow(new Date(lastWalk.timestamp), { locale: language === 'pl' ? pl : enUS, addSuffix: false }) + ' ' + t('walk.ago')
+                          : t('walk.no_walks_yet')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Main Action Button */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-8">
         <motion.button
@@ -201,19 +245,21 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setIsOverlayOpen(true)}
-          className="relative w-full max-w-sm aspect-square rounded-[3rem] btn-main flex flex-col items-center justify-center gap-4 animate-breathe"
+          className={`relative ${vs.mainButton}`}
         >
-          <div className="absolute inset-0 rounded-[3rem] animate-pulse-ring" />
+          <div className={`absolute inset-0 ${vs.mainButtonInner} animate-pulse-ring`} />
           
           <motion.span
-            animate={{ scale: [1, 1.1, 1] }}
+            animate={vs.styleName === 'slim' ? {} : { scale: [1, 1.1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="text-7xl"
+            className={vs.styleName === 'slim' ? 'text-4xl' : 'text-7xl'}
           >
             🐾
           </motion.span>
-          <span className="text-2xl font-bold">{t('home.main_button')}</span>
-          <span className="text-primary-foreground/80 text-sm">{t('home.tap_to_save')}</span>
+          <span className={vs.styleName === 'slim' ? 'text-xl font-semibold' : 'text-2xl font-bold'}>{t('home.main_button')}</span>
+          {vs.styleName !== 'slim' && (
+            <span className="text-primary-foreground/80 text-sm">{t('home.tap_to_save')}</span>
+          )}
         </motion.button>
       </div>
 
@@ -231,7 +277,7 @@ export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + index * 0.1 }}
-              className="card-pet p-3 flex flex-col items-center"
+              className={vs.card + ' p-3 flex flex-col items-center'}
             >
               <div
                 className="w-16 h-16 rounded-full overflow-hidden mb-2"
