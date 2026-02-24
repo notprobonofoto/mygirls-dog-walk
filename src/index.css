@@ -69,6 +69,122 @@
     --input: 0 0% 20%;
     --ring: 42 100% 51%;
   }
+
+  /* Theme: Dark */
+  .theme-dark {
+    --background: 240 15% 10%;
+    --foreground: 0 0% 95%;
+    --card: 240 15% 13%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 15% 13%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 245 58% 51%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 240 15% 18%;
+    --muted-foreground: 240 5% 55%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 15% 20%;
+    --input: 240 15% 20%;
+    --ring: 38 92% 50%;
+    --pee-color: 245 58% 51%;
+    --poop-color: 25 60% 45%;
+    --success-green: 142 70% 45%;
+    --shadow-soft: 0 4px 20px -4px hsl(240 30% 5% / 0.5);
+    --shadow-card: 0 2px 12px -2px hsl(240 30% 5% / 0.3);
+    --shadow-button: 0 8px 30px -8px hsl(38 92% 50% / 0.4);
+  }
+
+  /* Theme: Ocean Blue */
+  .theme-blue {
+    --background: 210 40% 96%;
+    --foreground: 210 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 10%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 187 80% 48%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 210 30% 90%;
+    --muted-foreground: 210 10% 45%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 25% 85%;
+    --input: 210 25% 85%;
+    --ring: 210 100% 50%;
+    --pee-color: 210 100% 50%;
+    --poop-color: 25 60% 45%;
+    --success-green: 160 84% 39%;
+    --shadow-soft: 0 4px 20px -4px hsl(210 30% 60% / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(210 30% 60% / 0.15);
+    --shadow-button: 0 8px 30px -8px hsl(210 100% 50% / 0.4);
+  }
+
+  /* Theme: Neon */
+  .theme-neon {
+    --background: 0 0% 4%;
+    --foreground: 120 100% 80%;
+    --card: 0 0% 8%;
+    --card-foreground: 120 50% 85%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 120 50% 85%;
+    --primary: 150 100% 50%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 180 100% 50%;
+    --secondary-foreground: 0 0% 4%;
+    --accent: 300 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 120 20% 50%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 120 50% 15%;
+    --input: 120 50% 15%;
+    --ring: 150 100% 50%;
+    --pee-color: 180 100% 50%;
+    --poop-color: 30 80% 50%;
+    --success-green: 150 100% 50%;
+    --shadow-soft: 0 4px 20px -4px hsl(150 100% 50% / 0.2);
+    --shadow-card: 0 2px 12px -2px hsl(150 100% 50% / 0.1);
+    --shadow-button: 0 8px 30px -8px hsl(150 100% 50% / 0.4);
+  }
+
+  /* Theme: Pink */
+  .theme-pink {
+    --background: 340 40% 97%;
+    --foreground: 340 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 30% 15%;
+    --primary: 340 82% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 300 60% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 330 80% 60%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 340 25% 92%;
+    --muted-foreground: 340 10% 45%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 20% 87%;
+    --input: 340 20% 87%;
+    --ring: 340 82% 52%;
+    --pee-color: 300 60% 65%;
+    --poop-color: 25 60% 45%;
+    --success-green: 142 70% 45%;
+    --shadow-soft: 0 4px 20px -4px hsl(340 30% 60% / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(340 30% 60% / 0.15);
+    --shadow-button: 0 8px 30px -8px hsl(340 82% 52% / 0.4);
+  }
 }
 
 @layer base {

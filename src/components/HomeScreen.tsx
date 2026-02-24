@@ -3,13 +3,21 @@ import { useState } from 'react';
 import { WalkOverlay } from './WalkOverlay';
 import { useSharedData } from '@/hooks/useSharedData';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useApp } from '@/contexts/AppContext';
 import { EventType } from '@/types';
+import { getWalkCountLabel } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
+import { Settings, Globe } from 'lucide-react';
 
-export function HomeScreen() {
+interface HomeScreenProps {
+  onOpenSettings: () => void;
+}
+
+export function HomeScreen({ onOpenSettings }: HomeScreenProps) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const { dogs, people, addWalk, walks, getDogAge, isHomeEvent } = useSharedData();
   const { currentPersonId, clearPerson } = useCurrentUser();
+  const { t, language, setLanguage } = useApp();
 
   const currentPerson = people.find(p => p.id === currentPersonId);
 
@@ -25,6 +33,10 @@ export function HomeScreen() {
 
   const todayWalkEvents = todayWalks.filter(w => !isHomeEvent(w.eventType));
   const todayHomeEvents = todayWalks.filter(w => isHomeEvent(w.eventType));
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'pl' ? 'en' : 'pl');
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -62,8 +74,27 @@ export function HomeScreen() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Header with Logo - Large and Prominent */}
-      <header className="relative z-10 pt-8 pb-6 px-6 text-center">
+      {/* Top bar with language toggle and settings */}
+      <div className="relative z-10 flex justify-between items-center pt-4 px-6">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={toggleLanguage}
+          className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm border border-border flex items-center justify-center"
+        >
+          <Globe className="w-4 h-4 text-muted-foreground" />
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onOpenSettings}
+          className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm border border-border flex items-center justify-center"
+        >
+          <Settings className="w-4 h-4 text-muted-foreground" />
+        </motion.button>
+      </div>
+
+      {/* Header with Logo */}
+      <header className="relative z-10 pt-2 pb-6 px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -97,7 +128,7 @@ export function HomeScreen() {
           transition={{ delay: 0.4 }}
           className="text-muted-foreground text-sm"
         >
-          Śledź spacery swoich piesków 🐕
+          {t('home.subtitle')}
         </motion.p>
 
         {/* Current user badge */}
@@ -112,7 +143,7 @@ export function HomeScreen() {
             <span className="text-xs font-bold text-primary">{currentPerson?.initial}</span>
           </div>
           <span className="text-muted-foreground">{currentPerson?.name}</span>
-          <span className="text-xs text-muted-foreground/60">• zmień</span>
+          <span className="text-xs text-muted-foreground/60">• {t('home.change')}</span>
         </motion.button>
       </header>
 
@@ -126,9 +157,9 @@ export function HomeScreen() {
         <div className="card-pet p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm text-muted-foreground">Dzisiaj</p>
+              <p className="text-sm text-muted-foreground">{t('home.today')}</p>
               <p className="text-2xl font-heading font-bold text-foreground">
-                {todayWalkEvents.length} {todayWalkEvents.length === 1 ? 'spacer' : todayWalkEvents.length < 5 ? 'spacery' : 'spacerów'}
+                {todayWalkEvents.length} {getWalkCountLabel(todayWalkEvents.length, language)}
               </p>
             </div>
             <div className="flex gap-3">
@@ -153,7 +184,7 @@ export function HomeScreen() {
               <div className="flex items-center gap-2 text-destructive text-sm">
                 <span>🚨</span>
                 <span className="font-medium">
-                  {todayHomeEvents.length} {todayHomeEvents.length === 1 ? 'zdarzenie' : 'zdarzenia'} w domu
+                  {todayHomeEvents.length} {todayHomeEvents.length === 1 ? t('home.home_events_one') : t('home.home_events_many')}
                 </span>
               </div>
             </div>
@@ -181,8 +212,8 @@ export function HomeScreen() {
           >
             🐾
           </motion.span>
-          <span className="text-2xl font-bold">SPACER ODBYTY</span>
-          <span className="text-primary-foreground/80 text-sm">Tapnij aby zapisać</span>
+          <span className="text-2xl font-bold">{t('home.main_button')}</span>
+          <span className="text-primary-foreground/80 text-sm">{t('home.tap_to_save')}</span>
         </motion.button>
       </div>
 

@@ -1,21 +1,24 @@
 import { motion } from 'framer-motion';
 import { Home, Clock, BarChart3, Dog, RotateCcw, Camera } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const tabs = [
-  { id: 'home', icon: Home, label: 'Start' },
-  { id: 'history', icon: Clock, label: 'Historia' },
-  { id: 'backdate', icon: RotateCcw, label: 'Wstecz' },
-  { id: 'stats', icon: BarChart3, label: 'Statystyki' },
-  { id: 'gallery', icon: Camera, label: 'Galeria' },
-  { id: 'dogs', icon: Dog, label: 'Pieski' },
+const tabDefs = [
+  { id: 'home', icon: Home, labelKey: 'nav.home' as const },
+  { id: 'history', icon: Clock, labelKey: 'nav.history' as const },
+  { id: 'backdate', icon: RotateCcw, labelKey: 'nav.backdate' as const },
+  { id: 'stats', icon: BarChart3, labelKey: 'nav.stats' as const },
+  { id: 'gallery', icon: Camera, labelKey: 'nav.gallery' as const },
+  { id: 'dogs', icon: Dog, labelKey: 'nav.dogs' as const },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+  const { t } = useApp();
+
   return (
     <motion.nav
       initial={{ y: 100 }}
@@ -23,7 +26,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
       className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-30 pb-safe"
     >
       <div className="flex justify-around items-center py-2 px-4">
-        {tabs.map((tab) => {
+        {tabDefs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
           
@@ -52,7 +55,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   isActive ? 'text-primary font-medium' : 'text-muted-foreground'
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             </motion.button>
           );

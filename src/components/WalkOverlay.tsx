@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dog, Person, EventType } from '@/types';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useApp } from '@/contexts/AppContext';
 import { isGuestPerson } from '@/lib/weekUtils';
 
 interface WalkOverlayProps {
@@ -17,12 +18,12 @@ type EventCategory = 'walk' | 'home';
 
 export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }: WalkOverlayProps) {
   const { currentPersonId } = useCurrentUser();
+  const { t } = useApp();
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Separate family members from guest
   const familyMembers = people.filter(p => !isGuestPerson(p.id));
   const guestPerson = people.find(p => isGuestPerson(p.id));
 
@@ -38,11 +39,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
       });
 
       setShowSuccess(true);
-      
-      // Haptic feedback
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
+      if (navigator.vibrate) navigator.vibrate(50);
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -68,7 +65,6 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
   };
 
   const handleEventSelect = (event: EventType) => {
-    // If selecting an event from a different category, clear previous selection
     if (selectedEvent) {
       const currentCategory = getEventCategory(selectedEvent);
       const newCategory = getEventCategory(event);
@@ -80,25 +76,24 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
     setSelectedEvent(event);
   };
 
-  const walkEvents: { type: EventType; icon: string; label: string }[] = [
-    { type: 'pee_walk', icon: '💧', label: 'Siku' },
-    { type: 'poop_walk', icon: '💩', label: 'Kupa' },
-    { type: 'both_walk', icon: '💧💩', label: 'Oba' },
-    { type: 'nothing_walk', icon: '🚶', label: 'Nic' },
+  const walkEvents: { type: EventType; icon: string; labelKey: string }[] = [
+    { type: 'pee_walk', icon: '💧', labelKey: 'walk.pee' },
+    { type: 'poop_walk', icon: '💩', labelKey: 'walk.poop' },
+    { type: 'both_walk', icon: '💧💩', labelKey: 'walk.both' },
+    { type: 'nothing_walk', icon: '🚶', labelKey: 'walk.nothing' },
   ];
 
-  const homeEvents: { type: EventType; icon: string; label: string }[] = [
-    { type: 'pee_home', icon: '🚨💧', label: 'Siku w domu' },
-    { type: 'poop_home', icon: '🚨💩', label: 'Kupa w domu' },
+  const homeEvents: { type: EventType; icon: string; labelKey: string }[] = [
+    { type: 'pee_home', icon: '🚨💧', labelKey: 'walk.pee_home' },
+    { type: 'poop_home', icon: '🚨💩', labelKey: 'walk.poop_home' },
   ];
 
-  const currentPerson = people.find(p => p.id === currentPersonId);
+  const canSave = selectedDog && selectedEvent && (selectedPersonId || currentPersonId);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -107,7 +102,6 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           />
 
-          {/* Bottom Sheet */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -128,19 +122,17 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                 >
                   🐾
                 </motion.span>
-                <p className="text-xl font-semibold text-primary">Zapisano!</p>
+                <p className="text-xl font-semibold text-primary">{t('walk.saved')}</p>
               </motion.div>
             ) : (
               <div className="p-6 pb-10">
-                {/* Handle */}
                 <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
 
                 {/* Person Selection */}
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-                  Kto wyprowadził?
+                  {t('walk.who')}
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {/* Family members */}
                   {familyMembers.map((person) => {
                     const isSelected = selectedPersonId ? selectedPersonId === person.id : currentPersonId === person.id;
                     return (
@@ -162,7 +154,6 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                     );
                   })}
                   
-                  {/* Guest option */}
                   {guestPerson && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
@@ -176,14 +167,14 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                         <span className="text-xs text-muted-foreground">👤</span>
                       </div>
-                      <span className="text-sm font-medium text-muted-foreground">Gość</span>
+                      <span className="text-sm font-medium text-muted-foreground">{t('walk.guest')}</span>
                     </motion.button>
                   )}
                 </div>
 
                 {/* Dogs selection */}
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-                  Który piesek?
+                  {t('walk.which_dog')}
                 </h3>
                 <div className="flex gap-3 mb-6">
                   {dogs.map((dog) => (
@@ -216,7 +207,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
 
                 {/* Walk events */}
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-                  Na spacerze
+                  {t('walk.on_walk')}
                 </h3>
                 <div className="grid grid-cols-4 gap-2 mb-6">
                   {walkEvents.map((event) => (
@@ -236,14 +227,14 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                       >
                         {event.icon}
                       </motion.span>
-                      <span className="text-[10px] font-medium leading-tight">{event.label}</span>
+                      <span className="text-[10px] font-medium leading-tight">{t(event.labelKey as any)}</span>
                     </motion.button>
                   ))}
                 </div>
 
                 {/* Home events */}
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-destructive">🚨</span> W domu (alert)
+                  <span className="text-destructive">🚨</span> {t('walk.at_home')}
                 </h3>
                 <div className="grid grid-cols-2 gap-2 mb-8">
                   {homeEvents.map((event) => (
@@ -263,7 +254,7 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                       >
                         {event.icon}
                       </motion.span>
-                      <span className="text-[10px] font-medium text-destructive leading-tight">{event.label}</span>
+                      <span className="text-[10px] font-medium text-destructive leading-tight">{t(event.labelKey as any)}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -273,14 +264,14 @@ export function WalkOverlay({ isOpen, onClose, onSave, dogs, people, getDogAge }
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
-                  disabled={!selectedDog || !selectedEvent || (!selectedPersonId && !currentPersonId)}
+                  disabled={!canSave}
                   className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
-                    selectedDog && selectedEvent && (selectedPersonId || currentPersonId)
+                    canSave
                       ? 'btn-main'
                       : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
-                  Zapisz
+                  {t('walk.save')}
                 </motion.button>
               </div>
             )}
