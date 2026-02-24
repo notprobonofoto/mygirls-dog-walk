@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       device_tokens: {
         Row: {
           created_at: string
@@ -101,6 +116,24 @@ export type Database = {
           id?: string
           person_id?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          language: string
+          person_id: string
+          theme: string
+        }
+        Insert: {
+          language?: string
+          person_id: string
+          theme?: string
+        }
+        Update: {
+          language?: string
+          person_id?: string
+          theme?: string
         }
         Relationships: []
       }
